@@ -76,9 +76,6 @@ airNO2_1 %>% select('pollutant','station_code','station_alias','latitude',
 
 #Let's analyze the data by measurement station to see completeness
 
-data_completeness <- airNO2_1 %>% group_by(station_code, year = year(date_time_utc))
-
-summarise_all(funs(round(sum(!is.na(.))/n(), 2)))  # We obtain the proportion of 'not NAs'
 
 St_gervasi_NO2 <- airNO2_1 %>% filter(station_code == 3)
 Poblenou_NO2 <- airNO2_1 %>% filter(station_code == 4)
@@ -202,5 +199,14 @@ ggplot(Observ_fabra_NO2, aes(x = date_time_utc, y = value)) +
 #I'm going to discard Sagrera and St Gervasi from the study
 
 #Going to analyse the missing values by station
-
-
+summary(Poblenou_NO2)
+Poblenou_NO2_2019 <-Poblenou_NO2 %>% group_by(date_time_utc) %>% filter(year == 2019 & month==03)
+View(Poblenou_NO2_2019)
+ggplot(Poblenou_NO2_2019, aes(x = date_time_utc, y = value)) + 
+  geom_line(alpha = 0.5) +
+  geom_smooth(color = "grey", alpha = 0.2) +
+  scale_colour_gradientn(colours = terrain.colors(10)) +
+  theme(legend.position = c(0.3, 0.9),
+        legend.background = element_rect(colour = "transparent", fill = NA), legend.direction = "horizontal")+
+  labs( x = "Time", y = "NO2 (µg/m3)", title = "NO2(µg/m3) - Poblenou_NO2_2019")
+#There are no measurements between 1am and 10am systematically, avoiding rush hour in the morning. 
