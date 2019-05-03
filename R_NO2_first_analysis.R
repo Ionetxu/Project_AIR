@@ -211,7 +211,7 @@ ggplot(Observ_fabra_NO2, aes(x = dt, y = value)) +
 
 #Going to analyse the missing values by station
 summary(Poblenou_NO2)
-Poblenou_NO2_2019_03 <-Poblenou_NO2 %>% group_by(dt) %>% filter(year == 2019 & month==03)
+Poblenou_NO2_2019_03 <-Poblenou_NO2 %>% group_by(dt) %>% filter(year == 2019 & month==03 & (day ==14 & day == 15 & day = 16))
 View(Poblenou_NO2_2019_03)
 ggplot(Poblenou_NO2_2019_03, aes(x = dt, y = value)) + 
   geom_line(alpha = 0.5) +
@@ -226,8 +226,8 @@ ggplot(Poblenou_NO2_2019_03, aes(x = dt, y = value)) +
   geom_line(alpha = 0.5) +
   geom_smooth(color = "grey", alpha = 0.2) +
   scale_colour_gradientn(colours = terrain.colors(10)) +
-  scale_x_date(limit=c(2019-03-01,2019-03-11))+
+  scale_x_date(limit=c("2019-03-01","2019-03-11"))+
   theme(legend.position = c(0.3, 0.9),
         legend.background = element_rect(colour = "transparent", fill = NA), legend.direction = "horizontal")+
-  labs( x = "Time", y = "NO2 (µg/m3)", title = "NO2(µg/m3) - Poblenou_NO2_2019")
+  labs( x = "Time", y = "NO2 (µg/m3)", title = "NO2(µg/m3) - Poblenou_NO2_03_2019")
 
