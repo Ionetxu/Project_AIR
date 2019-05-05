@@ -13,6 +13,7 @@ library(gridExtra)
 library(fpp2)
 library(RcppRoll)
 library(kableExtra)
+library(imputeTS)
 
 
 airNO2 <- read_csv('/Users/ione/Desktop/Project_AIR/data/airNO2.csv')
@@ -181,8 +182,8 @@ Observ_fabra_NO2_plt <- ggplot(Observ_fabra_NO2, aes(x = dt, y = value)) +
 #First I am going to plot a subset of data for Poblenou station:
 
 # Define Start and end times for the subset as POSICXct objects
-startTime <- as.POSIXct("2019-03-01 00:00:00",tz="UTC")
-endTime <- as.POSIXct("2019-03-8 00:00:00",tz="UTC")
+startTime <- as.POSIXct("2019-03-01 10:00:00",tz="UTC")
+endTime <- as.POSIXct("2019-03-20 10:00:00",tz="UTC")
 
 # create a start and end time R object
 start.end <- c(startTime,endTime)
@@ -192,18 +193,67 @@ start.end
 date_format_tz <- function(format = "%Y-%m-%d", tz = "UTC") {
   function(x) format(x, format, tz=tz)
 }
-
+View(Poblenou_NO2)
 Poblenou_NO2_subset_plt <- ggplot(Poblenou_NO2, aes(x = as.POSIXct(dt), y = value)) + 
+  geom_line(alpha = 0.5) +
+  labs( x = "Time", y = "NO2 (µg/m3)", title = "NO2(µg/m3) - Poblenou NO2 Subset")+
+  geom_smooth(color = "grey", alpha = 0.2) +
+  coord_cartesian( ylim = c(0, 120))+
+  scale_x_datetime(limits=start.end,breaks='24 hours',labels = date_format_tz( "%d\n%H:%M", tz="UTC"))
+  
+Poblenou_NO2_subset_plt
+
+Sants_NO2_subset_plt <- ggplot(Sants_NO2, aes(x = as.POSIXct(dt), y = value)) + 
+  geom_line(alpha = 0.5) +
+  labs( x = "Time", y = "NO2 (µg/m3)", title = "NO2(µg/m3) - Poblenou NO2 Subset")+
+  geom_smooth(color = "grey", alpha = 0.2) +
+  coord_cartesian( ylim = c(0, 120))+
+  scale_x_datetime(limits=start.end,breaks='12 hours',labels = date_format_tz( "%d\n%H:%M", tz="UTC"))
+
+Sants_NO2_subset_plt
+
+Eixample_NO2_subset_plt <- ggplot(Eixample_NO2, aes(x = as.POSIXct(dt), y = value)) + 
   geom_line(alpha = 0.5) +
   labs( x = "Time", y = "NO2 (µg/m3)", title = "NO2(µg/m3) - Poblenou NO2 Subset")+
   geom_smooth(color = "grey", alpha = 0.2) +
   coord_cartesian( ylim = c(0, 150))+
   scale_x_datetime(limits=start.end,breaks='12 hours',labels = date_format_tz( "%d\n%H:%M", tz="UTC"))
-  
 
-#There are no measurements between 1am and 10am systematically, avoiding rush hour in the morning. 
-# It seems there is a peak every morning around 9-10am, but we have no data to prove. 
+Eixample_NO2_subset_plt
 
+Gracia_NO2_subset_plt <- ggplot(Gracia_NO2, aes(x = as.POSIXct(dt), y = value)) + 
+  geom_line(alpha = 0.5) +
+  labs( x = "Time", y = "NO2 (µg/m3)", title = "NO2(µg/m3) - Poblenou NO2 Subset")+
+  geom_smooth(color = "grey", alpha = 0.2) +
+  coord_cartesian( ylim = c(0, 125))+
+  scale_x_datetime(limits=start.end,breaks='12 hours',labels = date_format_tz( "%d\n%H:%M", tz="UTC"))
+
+Gracia_NO2_subset_plt
+
+Ciutatella_NO2_subset_plt <- ggplot(Ciutatella_NO2, aes(x = as.POSIXct(dt), y = value)) + 
+  geom_line(alpha = 0.5) +
+  labs( x = "Time", y = "NO2 (µg/m3)", title = "NO2(µg/m3) - Poblenou NO2 Subset")+
+  geom_smooth(color = "grey", alpha = 0.2) +
+  coord_cartesian( ylim = c(0, 125))+
+  scale_x_datetime(limits=start.end,breaks='12 hours',labels = date_format_tz( "%d\n%H:%M", tz="UTC"))
+
+Ciutatella_NO2_subset_plt
+#There are no measurements taken between 1am and 10am systematically in any station, avoiding rush hour in the morning. 
+# It seems there is a peak every morning around 9-10am
+
+
+#Missing values management - package imputeTS
+
+#Going to create a TS object with assumption frequency= 24 (hourly measurements with 1 day )
+
+Poblenou_NO2_ts <- ts(Poblenou_NO2[,11], start = c(1991, 1), frequency = 24)
+Poblenou_NO2_ts
+#Let's plot the NA distribution with bars as it's a large file
+plotNA.distributionBar(Poblenou_NO2_ts, breaks = 20)
+plotNA.gapsize(Poblenou_NO2_ts)
+statsNA(Poblenou_NO2_ts)
+#I am going to apply a Kalman imputation method for missing values
+imp <- na.kalman(Poblenou_NO2_ts)
 
 
 
