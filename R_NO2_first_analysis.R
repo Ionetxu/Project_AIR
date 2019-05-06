@@ -245,15 +245,26 @@ Ciutatella_NO2_subset_plt
 #Missing values management - package imputeTS
 
 #Going to create a TS object with assumption frequency= 24 (hourly measurements with 1 day )
+#There is a bit gap of data in 2013-2014, so I will first try to do the imput between 2014-01-01 and 2019-01-01
+
 
 Poblenou_NO2_ts <- ts(Poblenou_NO2[,11], start = c(1991, 1), frequency = 24)
-Poblenou_NO2_ts
+
 #Let's plot the NA distribution with bars as it's a large file
 plotNA.distributionBar(Poblenou_NO2_ts, breaks = 20)
 plotNA.gapsize(Poblenou_NO2_ts)
 statsNA(Poblenou_NO2_ts)
+
+#Smaller ts object from 2014
+Poblenou_NO2_ts_1 <- ts(Poblenou_NO2[,11], start = c(2014, 1), frequency = 24)
+
+#Let's plot the NA distribution with bars as it's a large file
+plotNA.distributionBar(Poblenou_NO2_ts_1, breaks = 20)
+plotNA.gapsize(Poblenou_NO2_ts_1)
+statsNA(Poblenou_NO2_ts_1)
+#I am going to apply a mean imputation method for missining values
 #I am going to apply a Kalman imputation method for missing values
-imp <- na.kalman(Poblenou_NO2_ts)
+imp <- na.kalman(Poblenou_NO2_ts_1)
 
 
 
