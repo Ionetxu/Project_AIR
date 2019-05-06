@@ -103,7 +103,7 @@ Observ_fabra_NO2 <- airNO2_1 %>% filter(station_code == 58)
 
 #Let's do some initial plots by station:
 #St Gervasi 
-St_Gervasi_NO2_plt <- ggplot(St_gervasi_NO2, aes(x = dt, y = value)) + 
+St_Gervasi_NO2_plt <- ggplot(St_gervasi_NO2, aes(x = as.Date(dt), y = value)) + 
   geom_point(alpha = 0.5) +
   geom_smooth(color = "grey", alpha = 0.2) +
   labs( x = "Time", y = "NO2 (µg/m3)", title = "NO2(µg/m3) - St Gervasi")
@@ -114,13 +114,16 @@ St_Gervasi_NO2_plt <- ggplot(St_gervasi_NO2, aes(x = dt, y = value)) +
 Poblenou_NO2_plt <- ggplot(Poblenou_NO2, aes(x = dt, y = value)) + 
   geom_point(alpha = 0.5) +
   geom_smooth(color = "grey", alpha = 0.2) +
+  scale_x_datetime(breaks='1 year',labels = date_format_tz( "%y")) +
   labs( x = "Time", y = "NO2 (µg/m3)", title = "NO2(µg/m3) - Poblenou")
+Poblenou_NO2_plt 
 #Good data from 1991 to 2019, with breaks in between
 
 #Sagrera
 Sagrera_NO2_plt <- ggplot(Sagrera_NO2, aes(x = dt, y = value)) + 
   geom_point(alpha = 0.5) +
   geom_smooth(color = "grey", alpha = 0.2) +
+  scale_x_datetime(breaks='1 year',labels = date_format_tz( "%y")) +
   labs( x = "Time", y = "NO2 (µg/m3)", title = "NO2 (µg/m3)- Sagrera")
 #Only data from 1993 to 2002
 
@@ -128,24 +131,28 @@ Sagrera_NO2_plt <- ggplot(Sagrera_NO2, aes(x = dt, y = value)) +
 Sants_NO2_plt <- ggplot(Sants_NO2, aes(x = dt, y = value)) + 
   geom_point(alpha = 0.5) +
   geom_smooth(color = "grey", alpha = 0.2) +
+  scale_x_datetime(breaks='1 year',labels = date_format_tz( "%y")) +
   labs( x = "Time", y = "NO2 (µg/m3)", title = "NO2(µg/m3) - Sants")
 #Data from 1995 to 2019
 #Eixample
 Eixample_NO2_plt <- ggplot(Eixample_NO2, aes(x = dt, y = value)) + 
   geom_point(alpha = 0.5) +
   geom_smooth(color = "grey", alpha = 0.2) +
+  scale_x_datetime(breaks='1 year',labels = date_format_tz( "%y")) +
   labs( x = "Time", y = "NO2 (µg/m3)", title = "NO2(µg/m3) - Eixample")
 #Data from 1995 to 2019
 #Gracia
 Gracia_NO2_plt <- ggplot(Gracia_NO2, aes(x = dt, y = value)) + 
   geom_point(alpha = 0.5) +
   geom_smooth(color = "grey", alpha = 0.2) +
+  scale_x_datetime(breaks='1 year',labels = date_format_tz( "%y")) +
   labs( x = "Time", y = "NO2 (µg/m3)", title = "NO2(µg/m3) - Gracia")
 #Good data from 1995 to 2019
 #Ciutatella
 Ciutatella_NO2_plt <- ggplot(Ciutatella_NO2, aes(x = dt, y = value)) + 
   geom_point(alpha = 0.5) +
   geom_smooth(color = "grey", alpha = 0.2) +
+  scale_x_datetime(breaks='1 year',labels = date_format_tz( "%y")) +
   labs( x = "Time", y = "NO2 (µg/m3)", title = "NO2(µg/m3) - Ciutatella")
 #Data from 2004 to 2019
 
@@ -153,12 +160,14 @@ Ciutatella_NO2_plt <- ggplot(Ciutatella_NO2, aes(x = dt, y = value)) +
 Torre_girona_NO2_plt <- ggplot(Torre_girona_NO2, aes(x = dt, y = value)) + 
   geom_point(alpha = 0.5) +
   geom_smooth(color = "grey", alpha = 0.2) +
+  scale_x_datetime(breaks='1 year',labels = date_format_tz( "%y")) +
   labs( x = "Time", y = "NO2 (µg/m3)", title = "NO2(µg/m3) - Torre Girona")
 #Data from 2006 to 2019
 #Vall_hebron
 Vall_hebron_NO2_plt <- ggplot(Vall_hebron_NO2, aes(x = dt, y = value)) + 
   geom_point(alpha = 0.5) +
   geom_smooth(color = "grey", alpha = 0.2) +
+  scale_x_datetime(breaks='1 year',labels = date_format_tz( "%y")) +
   labs( x = "Time", y = "NO2 (µg/m3)", title = "NO2(µg/m3) - Vall Hebron")
 #Data only for 2010-2011??
 
@@ -166,12 +175,14 @@ Vall_hebron_NO2_plt <- ggplot(Vall_hebron_NO2, aes(x = dt, y = value)) +
 Palau_reial_NO2_plt <- ggplot(Palau_reial_NO2, aes(x = dt, y = value)) + 
   geom_point(alpha = 0.5) +
   geom_smooth(color = "grey", alpha = 0.2) +
+  scale_x_datetime(breaks='1 year',labels = date_format_tz( "%y")) +
   labs( x = "Time", y = "NO2 (µg/m3)", title = "NO2(µg/m3) - Palau Reial")
 #Data from 2011 to 2019
 #Observ_fabra
 Observ_fabra_NO2_plt <- ggplot(Observ_fabra_NO2, aes(x = dt, y = value)) + 
   geom_point(alpha = 0.5) +
   geom_smooth(color = "grey", alpha = 0.2) +
+  scale_x_datetime(breaks='1 year',labels = date_format_tz( "%y")) +
   labs( x = "Time", y = "NO2 (µg/m3)", title = "NO2(µg/m3) - Observatori Fabra")
 #Data from 2018 to 2019
 
@@ -245,27 +256,33 @@ Ciutatella_NO2_subset_plt
 #Missing values management - package imputeTS
 
 #Going to create a TS object with assumption frequency= 24 (hourly measurements with 1 day )
-#There is a bit gap of data in 2013-2014, so I will first try to do the imput between 2014-01-01 and 2019-01-01
+#There is a bit gap of data in 2013-2014, so I will first try to do the imput between 2014-01-01 and 2017-12-31,
+#as there is a gap of data in 2018 as well. 
 
+Poblenou_NO2_2014_1 <- Poblenou_NO2 %>% filter(year ==2014 & month == 1)
 
-Poblenou_NO2_ts <- ts(Poblenou_NO2[,11], start = c(1991, 1), frequency = 24)
-
-#Let's plot the NA distribution with bars as it's a large file
-plotNA.distributionBar(Poblenou_NO2_ts, breaks = 20)
-plotNA.gapsize(Poblenou_NO2_ts)
-statsNA(Poblenou_NO2_ts)
-
-#Smaller ts object from 2014
-Poblenou_NO2_ts_1 <- ts(Poblenou_NO2[,11], start = c(2014, 1), frequency = 24)
+Poblenou_NO2_2014_ts <- ts(Poblenou_NO2_2014_1[,11], start = c(2014, 1), frequency = 24)
 
 #Let's plot the NA distribution with bars as it's a large file
-plotNA.distributionBar(Poblenou_NO2_ts_1, breaks = 20)
-plotNA.gapsize(Poblenou_NO2_ts_1)
-statsNA(Poblenou_NO2_ts_1)
-#I am going to apply a mean imputation method for missining values
-#I am going to apply a Kalman imputation method for missing values
-imp <- na.kalman(Poblenou_NO2_ts_1)
+plotNA.distributionBar(Poblenou_NO2_2014_ts, breaks = 31)
+plotNA.gapsize(Poblenou_NO2_2014_ts)
+statsNA(Poblenou_NO2_2014_ts)
 
+#NO2 monthly evolution during 2014 in Poblenou station
+Poblenou_NO2_subset_2014_plt <- ggplot(Poblenou_NO2_2014_1, aes(x = dt, y = value)) + 
+  geom_line(alpha = 0.5) +
+  labs( x = "Time", y = "NO2 (µg/m3)", title = "NO2(µg/m3) - Poblenou NO2 January 2014 without imputations")+
+  geom_smooth(color = "grey", alpha = 0.2) +
+  coord_cartesian( ylim = c(0, 150))+
+  scale_x_datetime(breaks='1 day',labels = date_format_tz( "%d"))
+Poblenou_NO2_subset_2014_plt
+
+#I am going to try imputing values by kalman algorithm:
+
+imp <- na.kalman(Poblenou_NO2_2014_ts)
+
+#Plot of real values with imputations with kalman algorithm:
+plotNA.imputations(x.withNA = Poblenou_NO2_2014_ts, x.withImputations = imp)
 
 
 
