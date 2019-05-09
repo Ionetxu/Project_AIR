@@ -312,13 +312,13 @@ imp_2014_NO2_Poblenou_locf <- na.locf(Poblenou_NO2_2014_ts)
 plotNA.imputations(x.withNA = Poblenou_NO2_2014_ts_1, x.withImputations = imp_2014_1_NO2_Poblenou_locf)
 plotNA.imputations(x.withNA = Poblenou_NO2_2014_ts, x.withImputations = imp_2014_NO2_Poblenou_locf)
 
-
 #I am going to try imputing values by kalman algorithm:
 imp_2014_1_NO2_Poblenou_kalman <- na.kalman(Poblenou_NO2_2014_ts_1)
 imp_2014_NO2_Poblenou_kalman <- na.kalman(Poblenou_NO2_2014_ts)
 #Plot of real values with imputations with kalman algorithm:
 plotNA.imputations(x.withNA = Poblenou_NO2_2014_ts_1, x.withImputations = imp_2014_1_NO2_Poblenou_kalman)
 plotNA.imputations(x.withNA = Poblenou_NO2_2014_ts, x.withImputations = imp_2014_NO2_Poblenou_kalman)
+#Some imputed values are negative, which is not a good outcome.
 
 #I am going to try imputing values by interpolation algorithm:
 imp_2014_1_NO2_Poblenou_intp <- na.interpolation(Poblenou_NO2_2014_ts_1)
@@ -327,7 +327,30 @@ imp_2014_NO2_Poblenou_intp <- na.interpolation(Poblenou_NO2_2014_ts)
 plotNA.imputations(x.withNA = Poblenou_NO2_2014_ts_1, x.withImputations = imp_2014_1_NO2_Poblenou_intp)
 plotNA.imputations(x.withNA = Poblenou_NO2_2014_ts, x.withImputations = imp_2014_NO2_Poblenou_intp)
 
+#Autocorrelation of time-series plot:
+ggAcf(imp_2014_NO2_Poblenou_intp)
+#The maximum autocorrelation occurs at lag=1. We are going to apply a Ljung-Box test to discard is 
+#white noise time series
+Box.test(imp_2014_NO2_Poblenou_intp, lag=1, type = "Ljung")
 
+#Because p-value < 2,2 e-16, we see there is some seasonality and it's not a completely random series
 
+#Now I am going to prepare CSV files for the time-series forecasting:
+#*Imputing NA values bt interpolation for 4 years (2014,2015,2016,2017)
+#*Doing it for all stations except for St_Gervasi and Sagrera:
+#St_gervasi_NO2, Poblenou_NO2, Sagrera_NO2, Sants_NO2, Eixample_NO2, Gracia_NO2, Ciutatella_NO2, Torre_girona_NO2
+#Palau_reial_NO2
+#Doing it also for PM10
+
+#Imputation of NA values for Poblenou - NO2 values from 2014 to 2018
+
+Poblenou_NO2_2014_2017 <- Poblenou_NO2 %>% filter(year >=2014, year <= 2017)
+Poblenou_NO2_2014_2017_ts <- ts(Poblenou_NO2_2014_2017[,11], start = c(2014, 1), frequency = 24)
+
+imp_2014_2017_NO2_Poblenou_intp <- na.interpolation(Poblenou_NO2_2014_2017_ts)
+plotNA.imputations(x.withNA = Poblenou_NO2_2014_2017_ts, x.withImputations = imp_2014_2017_NO2_Poblenou_intp)
+
+autoplot(imp_2014_2017_NO2_Poblenou_intp)
+autoplot(Poblenou_NO2_2014_2017_ts)
 
 
