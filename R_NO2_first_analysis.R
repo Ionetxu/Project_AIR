@@ -260,29 +260,74 @@ Ciutatella_NO2_subset_plt
 #as there is a gap of data in 2018 as well. 
 
 Poblenou_NO2_2014_1 <- Poblenou_NO2 %>% filter(year ==2014 & month == 1)
+Poblenou_NO2_2014_ts_1 <- ts(Poblenou_NO2_2014_1[,11], start = c(2014, 1), frequency = 24)
+plotNA.distributionBar(Poblenou_NO2_2014_ts_1, breaks = 31)
+plotNA.gapsize(Poblenou_NO2_2014_ts_1)
+statsNA(Poblenou_NO2_2014_ts_1)
 
-Poblenou_NO2_2014_ts <- ts(Poblenou_NO2_2014_1[,11], start = c(2014, 1), frequency = 24)
+Poblenou_NO2_subset_2014_plt_1 <- ggplot(Poblenou_NO2_2014_1, aes(x = dt, y = value)) + 
+  geom_line(alpha = 0.5) +
+  labs( x = "Time", y = "NO2 (µg/m3)", title = "NO2(µg/m3) - Poblenou NO2 Jan 2014 without imputations")+
+  geom_smooth(color = "grey", alpha = 0.2) +
+  coord_cartesian( ylim = c(0, 150))+
+  scale_x_datetime(breaks='1 day',labels = date_format_tz( "%d"))
+Poblenou_NO2_subset_2014_plt_1
 
+#We are going to apply the NA analysis to whole 2014 year:
+
+Poblenou_NO2_2014 <- Poblenou_NO2 %>% filter(year ==2014)
+Poblenou_NO2_2014_ts <- ts(Poblenou_NO2_2014[,11], start = c(2014, 1), frequency = 24)
 #Let's plot the NA distribution with bars as it's a large file
-plotNA.distributionBar(Poblenou_NO2_2014_ts, breaks = 31)
+plotNA.distributionBar(Poblenou_NO2_2014_ts, breaks = 12)
 plotNA.gapsize(Poblenou_NO2_2014_ts)
 statsNA(Poblenou_NO2_2014_ts)
 
 #NO2 monthly evolution during 2014 in Poblenou station
-Poblenou_NO2_subset_2014_plt <- ggplot(Poblenou_NO2_2014_1, aes(x = dt, y = value)) + 
+Poblenou_NO2_subset_2014_plt <- ggplot(Poblenou_NO2_2014, aes(x = dt, y = value)) + 
   geom_line(alpha = 0.5) +
-  labs( x = "Time", y = "NO2 (µg/m3)", title = "NO2(µg/m3) - Poblenou NO2 January 2014 without imputations")+
+  labs( x = "Time", y = "NO2 (µg/m3)", title = "NO2(µg/m3) - Poblenou NO2 2014 without imputations")+
   geom_smooth(color = "grey", alpha = 0.2) +
   coord_cartesian( ylim = c(0, 150))+
-  scale_x_datetime(breaks='1 day',labels = date_format_tz( "%d"))
+  scale_x_datetime(breaks='1 month',labels = date_format_tz( "%b %y"))
 Poblenou_NO2_subset_2014_plt
 
+#I am going to try imputing values by mean algorithm:
+imp_2014_1_NO2_Poblenou_mean <- na.mean(Poblenou_NO2_2014_ts_1)
+imp_2014_NO2_Poblenou_mean <- na.mean(Poblenou_NO2_2014_ts)
+#Plot of real values with imputations with mean algorithm:
+plotNA.imputations(x.withNA = Poblenou_NO2_2014_ts_1, x.withImputations = imp_2014_1_NO2_Poblenou_mean)
+plotNA.imputations(x.withNA = Poblenou_NO2_2014_ts, x.withImputations = imp_2014_NO2_Poblenou_mean)
+
+#I am going to try imputing values by Weighted Moving Average algorithm:
+imp_2014_1_NO2_Poblenou_ma <- na.ma(Poblenou_NO2_2014_ts_1)
+imp_2014_NO2_Poblenou_ma <- na.ma(Poblenou_NO2_2014_ts)
+#Plot of real values with imputations with mean algorithm:
+plotNA.imputations(x.withNA = Poblenou_NO2_2014_ts_1, x.withImputations = imp_2014_1_NO2_Poblenou_ma)
+plotNA.imputations(x.withNA = Poblenou_NO2_2014_ts, x.withImputations = imp_2014_NO2_Poblenou_ma)
+
+#I am going to try imputing values by Last Observation Carried Forward algorithm:
+imp_2014_1_NO2_Poblenou_locf <- na.locf(Poblenou_NO2_2014_ts_1)
+imp_2014_NO2_Poblenou_locf <- na.locf(Poblenou_NO2_2014_ts)
+#Plot of real values with imputations with mean algorithm:
+plotNA.imputations(x.withNA = Poblenou_NO2_2014_ts_1, x.withImputations = imp_2014_1_NO2_Poblenou_locf)
+plotNA.imputations(x.withNA = Poblenou_NO2_2014_ts, x.withImputations = imp_2014_NO2_Poblenou_locf)
+
+
 #I am going to try imputing values by kalman algorithm:
-
-imp <- na.kalman(Poblenou_NO2_2014_ts)
-
+imp_2014_1_NO2_Poblenou_kalman <- na.kalman(Poblenou_NO2_2014_ts_1)
+imp_2014_NO2_Poblenou_kalman <- na.kalman(Poblenou_NO2_2014_ts)
 #Plot of real values with imputations with kalman algorithm:
-plotNA.imputations(x.withNA = Poblenou_NO2_2014_ts, x.withImputations = imp)
+plotNA.imputations(x.withNA = Poblenou_NO2_2014_ts_1, x.withImputations = imp_2014_1_NO2_Poblenou_kalman)
+plotNA.imputations(x.withNA = Poblenou_NO2_2014_ts, x.withImputations = imp_2014_NO2_Poblenou_kalman)
+
+#I am going to try imputing values by interpolation algorithm:
+imp_2014_1_NO2_Poblenou_intp <- na.interpolation(Poblenou_NO2_2014_ts_1)
+imp_2014_NO2_Poblenou_intp <- na.interpolation(Poblenou_NO2_2014_ts)
+#Plot of real values with imputations with interpolation algorithm:
+plotNA.imputations(x.withNA = Poblenou_NO2_2014_ts_1, x.withImputations = imp_2014_1_NO2_Poblenou_intp)
+plotNA.imputations(x.withNA = Poblenou_NO2_2014_ts, x.withImputations = imp_2014_NO2_Poblenou_intp)
+
+
 
 
 
