@@ -133,13 +133,17 @@ Sants_NO2_plt <- ggplot(Sants_NO2, aes(x = dt, y = value)) +
   geom_smooth(color = "grey", alpha = 0.2) +
   scale_x_datetime(breaks='1 year',labels = date_format_tz( "%y")) +
   labs( x = "Time", y = "NO2 (µg/m3)", title = "NO2(µg/m3) - Sants")
+Sants_NO2_plt
 #Data from 1995 to 2019
 #Eixample
 Eixample_NO2_plt <- ggplot(Eixample_NO2, aes(x = dt, y = value)) + 
   geom_point(alpha = 0.5) +
+  geom_hline(yintercept = 200, linetype="dashed", colour = "red")+
+  geom_hline(yintercept = 40, linetype="dashed", colour = "red")+
   geom_smooth(color = "grey", alpha = 0.2) +
   scale_x_datetime(breaks='1 year',labels = date_format_tz( "%y")) +
-  labs( x = "Time", y = "NO2 (µg/m3)", title = "NO2(µg/m3) - Eixample")
+  labs( x = "Year", y = "NO2 (µg/m3)", title = "NO2(µg/m3) - NO2 evolution in Eixample station")
+Eixample_NO2_plt
 #Data from 1995 to 2019
 #Gracia
 Gracia_NO2_plt <- ggplot(Gracia_NO2, aes(x = dt, y = value)) + 
@@ -194,7 +198,7 @@ Observ_fabra_NO2_plt <- ggplot(Observ_fabra_NO2, aes(x = dt, y = value)) +
 
 # Define Start and end times for the subset as POSICXct objects
 startTime <- as.POSIXct("2019-03-01 10:00:00",tz="UTC")
-endTime <- as.POSIXct("2019-03-20 10:00:00",tz="UTC")
+endTime <- as.POSIXct("2019-03-08 10:00:00",tz="UTC")
 
 # create a start and end time R object
 start.end <- c(startTime,endTime)
@@ -207,28 +211,29 @@ date_format_tz <- function(format = "%Y-%m-%d", tz = "UTC") {
 View(Poblenou_NO2)
 Poblenou_NO2_subset_plt <- ggplot(Poblenou_NO2, aes(x = as.POSIXct(dt), y = value)) + 
   geom_line(alpha = 0.5) +
-  labs( x = "Time", y = "NO2 (µg/m3)", title = "NO2(µg/m3) - Poblenou NO2 Subset")+
+  labs( x = "Time", y = "NO2 (µg/m3)", title = "NO2(µg/m3) - Poblenou NO2")+
   geom_smooth(color = "grey", alpha = 0.2) +
   coord_cartesian( ylim = c(0, 120))+
-  scale_x_datetime(limits=start.end,breaks='24 hours',labels = date_format_tz( "%d\n%H:%M", tz="UTC"))
+  scale_x_datetime(limits=start.end,breaks='24 hours',labels = date_format_tz( "%b\n%d", tz="UTC"))
   
 Poblenou_NO2_subset_plt
 
 Sants_NO2_subset_plt <- ggplot(Sants_NO2, aes(x = as.POSIXct(dt), y = value)) + 
   geom_line(alpha = 0.5) +
-  labs( x = "Time", y = "NO2 (µg/m3)", title = "NO2(µg/m3) - Poblenou NO2 Subset")+
+  labs( x = "Time", y = "NO2 (µg/m3)", title = "NO2(µg/m3) - NO2 levels in March 2019 in Sants station")+
   geom_smooth(color = "grey", alpha = 0.2) +
   coord_cartesian( ylim = c(0, 120))+
-  scale_x_datetime(limits=start.end,breaks='12 hours',labels = date_format_tz( "%d\n%H:%M", tz="UTC"))
+  scale_x_datetime(limits=start.end,breaks='1 day',labels = date_format_tz( "%b\n%d"))
 
 Sants_NO2_subset_plt
 
 Eixample_NO2_subset_plt <- ggplot(Eixample_NO2, aes(x = as.POSIXct(dt), y = value)) + 
   geom_line(alpha = 0.5) +
-  labs( x = "Time", y = "NO2 (µg/m3)", title = "NO2(µg/m3) - Poblenou NO2 Subset")+
+  geom_hline(yintercept = 40, linetype="dashed", colour = "red")+
+  labs( x = "Time", y = "NO2 (µg/m3)", title = "NO2(µg/m3) - NO2 levels in March 2019 in Eixample station")+
   geom_smooth(color = "grey", alpha = 0.2) +
   coord_cartesian( ylim = c(0, 150))+
-  scale_x_datetime(limits=start.end,breaks='12 hours',labels = date_format_tz( "%d\n%H:%M", tz="UTC"))
+  scale_x_datetime(limits=start.end,breaks='24 hours',labels = date_format_tz( "%b\n%d"))
 
 Eixample_NO2_subset_plt
 
@@ -353,4 +358,22 @@ plotNA.imputations(x.withNA = Poblenou_NO2_2014_2017_ts, x.withImputations = imp
 autoplot(imp_2014_2017_NO2_Poblenou_intp)
 autoplot(Poblenou_NO2_2014_2017_ts)
 
+Poblenou_NO2_2014_2017 <- Poblenou_NO2_2014_2017 %>% mutate(imp_2014_2017_NO2_Poblenou_intp)
+str(Poblenou_NO2_2014_2017)
 
+write.csv(Poblenou_NO2_2014_2017, "/Users/ione/Desktop/Project_AIR/Data/Poblenou_NO2.csv", row.names = F)
+
+#I am going to write the new dataframe with the ts element with new imputed values:
+#SANTS:
+Sants_NO2_2014_2017 <- Sants_NO2 %>% filter(year >=2014, year <= 2017)
+Sants_NO2_2014_2017_ts <- ts(Sants_NO2_2014_2017[,11], start = c(2014, 1), frequency = 24)
+imp_2014_2017_NO2_Sants_intp <- na.interpolation(Sants_NO2_2014_2017_ts)
+plotNA.imputations(x.withNA = Sants_NO2_2014_2017_ts, x.withImputations = imp_2014_2017_NO2_Sants_intp)
+write.csv(Sants_NO2_2014_2017, "/Users/ione/Desktop/Project_AIR/Data/Sants_NO2.csv", row.names = F)
+
+#Eixample:
+Eixample_NO2_2014_2017 <- Eixample_NO2 %>% filter(year >=2014, year <= 2017)
+Eixample_NO2_2014_2017_ts <- ts(Eixample_NO2_2014_2017[,11], start = c(2014, 1), frequency = 24)
+imp_2014_2017_NO2_Eixample_intp <- na.interpolation(Eixample_NO2_2014_2017_ts)
+plotNA.imputations(x.withNA = Eixample_NO2_2014_2017_ts, x.withImputations = imp_2014_2017_NO2_Eixample_intp)
+write.csv(Eixample_NO2_2014_2017, "/Users/ione/Desktop/Project_AIR/Data/Eixample_NO2.csv", row.names = F)
