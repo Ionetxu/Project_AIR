@@ -15,6 +15,8 @@ library(RcppRoll)
 library(kableExtra)
 library(imputeTS)
 
+install.packages("bookdown")
+
 
 airNO2 <- read_csv('/Users/ione/Desktop/Project_AIR/data/airNO2.csv')
 View(airNO2)
@@ -151,6 +153,7 @@ Gracia_NO2_plt <- ggplot(Gracia_NO2, aes(x = dt, y = value)) +
   geom_smooth(color = "grey", alpha = 0.2) +
   scale_x_datetime(breaks='1 year',labels = date_format_tz( "%y")) +
   labs( x = "Time", y = "NO2 (µg/m3)", title = "NO2(µg/m3) - Gracia")
+Gracia_NO2_plt
 #Good data from 1995 to 2019
 #Ciutatella
 Ciutatella_NO2_plt <- ggplot(Ciutatella_NO2, aes(x = dt, y = value)) + 
@@ -340,8 +343,8 @@ Box.test(imp_2014_NO2_Poblenou_intp, lag=1, type = "Ljung")
 
 #Because p-value < 2,2 e-16, we see there is some seasonality and it's not a completely random series
 
-#Now I am going to prepare CSV files for the time-series forecasting:
-#*Imputing NA values bt interpolation for 4 years (2014,2015,2016,2017)
+#Now I am going to prepare CSV files for time-series forecasting. Things to do:
+#*Imputing NA values bt interpolation for 4 years (2014,2015,2016,2017, and maybe 2018)
 #*Doing it for all stations except for St_Gervasi and Sagrera:
 #St_gervasi_NO2, Poblenou_NO2, Sagrera_NO2, Sants_NO2, Eixample_NO2, Gracia_NO2, Ciutatella_NO2, Torre_girona_NO2
 #Palau_reial_NO2
@@ -371,9 +374,32 @@ imp_2014_2017_NO2_Sants_intp <- na.interpolation(Sants_NO2_2014_2017_ts)
 plotNA.imputations(x.withNA = Sants_NO2_2014_2017_ts, x.withImputations = imp_2014_2017_NO2_Sants_intp)
 write.csv(Sants_NO2_2014_2017, "/Users/ione/Desktop/Project_AIR/Data/Sants_NO2.csv", row.names = F)
 
+#I am going to use Eixample data for forecasting purposes:
 #Eixample:
-Eixample_NO2_2014_2017 <- Eixample_NO2 %>% filter(year >=2014, year <= 2017)
-Eixample_NO2_2014_2017_ts <- ts(Eixample_NO2_2014_2017[,11], start = c(2014, 1), frequency = 24)
-imp_2014_2017_NO2_Eixample_intp <- na.interpolation(Eixample_NO2_2014_2017_ts)
-plotNA.imputations(x.withNA = Eixample_NO2_2014_2017_ts, x.withImputations = imp_2014_2017_NO2_Eixample_intp)
+Eixample_NO2_2014_2018 <- Eixample_NO2 %>% filter(year >=2014, year <= 2018)
+Eixample_NO2_2014_2018_ts <- ts(Eixample_NO2_2014_2018[,11], start = c(2014, 1), frequency = 24)
+plotNA.distributionBar(Eixample_NO2_2014_2018_ts, breaks = 12)
+plotNA.gapsize(Eixample_NO2_2014_2018_ts)
+statsNA(Eixample_NO2_2014_2018_ts)
+imp_2014_2018_NO2_Eixample_intp <- na.interpolation(Eixample_NO2_2014_2018_ts)
+
+Eixample_NO2_2014_2018 <- Eixample_NO2_2014_2018 %>% mutate(imp_2014_2018_NO2_Eixample_intp)
+plotNA.imputations(x.withNA = Eixample_NO2_2014_2018_ts, x.withImputations = imp_2014_2018_NO2_Eixample_intp)
 write.csv(Eixample_NO2_2014_2017, "/Users/ione/Desktop/Project_AIR/Data/Eixample_NO2.csv", row.names = F)
+write.csv(Eixample_NO2_2014_2018, "/Users/ione/Desktop/Project_AIR/Data/Eixample_NO2_2018.csv", row.names = F)
+write.csv(imp_2014_2018_NO2_Eixample_intp, "/Users/ione/Desktop/Project_AIR/Data/Eixample_NO2_ts.csv", row.names = F)
+
+
+#I am going to use Gracia data for forecasting purposes:
+#Gracia:
+Gracia_NO2_2014_2018 <- Gracia_NO2 %>% filter(year >=2014, year <= 2018)
+Gracia_NO2_2014_2018_ts <- ts(Gracia_NO2_2014_2018[,11], start = c(2014, 1), frequency = 24)
+plotNA.distributionBar(Gracia_NO2_2014_2018_ts, breaks = 12)
+plotNA.gapsize(Gracia_NO2_2014_2018_ts)
+statsNA(Gracia_NO2_2014_2018_ts)
+imp_2014_2018_NO2_Gracia_intp <- na.interpolation(Gracia_NO2_2014_2018_ts)
+
+Gracia_NO2_2014_2018 <- Gracia_NO2_2014_2018 %>% mutate(imp_2014_2018_NO2_Gracia_intp)
+plotNA.imputations(x.withNA = Gracia_NO2_2014_2018_ts, x.withImputations = imp_2014_2018_NO2_Gracia_intp)
+write.csv(Gracia_NO2_2014_2018, "/Users/ione/Desktop/Project_AIR/Data/Gracia_NO2_2018.csv", row.names = F)
+write.csv(imp_2014_2018_NO2_Gracia_intp, "/Users/ione/Desktop/Project_AIR/Data/Gracia_NO2_ts.csv", row.names = F)
