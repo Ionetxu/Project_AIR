@@ -71,25 +71,21 @@ summary(airNO2)
 #Take out a space of time column
 str_squish(airNO2$time)
 airNO2$time <- paste(airNO2$time,":00:00",sep = "")
+#Times that are 24:00:00 transform them into 0:00:00 of next day as R doesnt like the 24h format.
+#I will try to do this with lubridate:
 head(print(airNO2$time))
 
+
 #Going to include the time with the date in a new column dt
-
-
 airNO2$dt <- with(airNO2, ymd(airNO2$dt) + hms(time))
 #Convert into POSIXct because Dplyer doesnt support POSIXlt
-
 airNO2$dt <- as.POSIXct(airNO2$dt)
 head(print(airNO2$dt))
 #We drop columns that we don't need - measurement-code and station name & sort columns
-airNO2_1 <- dplyr::select(airNO2, -c("measurement_code", "station_name"))
+airNO2_1 <- dplyr::select(airNO2, -c("measurement_code", "station_name", "time"))
 summary(airNO2_1)
 
-airNO2_1 %>% select('pollutant','station_code','station_alias','latitude',
-                 'longitude','year','month','day','dt','time','value')
-
-#Let's analyze the data by measurement station to see completeness
-
+#Let's analyze the data by plotting them by station
 
 St_gervasi_NO2 <- airNO2_1 %>% filter(station_code == 3)
 Poblenou_NO2 <- airNO2_1 %>% filter(station_code == 4)
@@ -374,21 +370,55 @@ imp_2014_2017_NO2_Sants_intp <- na.interpolation(Sants_NO2_2014_2017_ts)
 plotNA.imputations(x.withNA = Sants_NO2_2014_2017_ts, x.withImputations = imp_2014_2017_NO2_Sants_intp)
 write.csv(Sants_NO2_2014_2017, "/Users/ione/Desktop/Project_AIR/Data/Sants_NO2.csv", row.names = F)
 
+
+
 #I am going to use Eixample data for forecasting purposes:
-#Eixample:
+#I am going to subset 3 training datasets:
 Eixample_NO2_2014_2018 <- Eixample_NO2 %>% filter(year >=2014, year <= 2018)
-Eixample_NO2_2014_2018_ts <- ts(Eixample_NO2_2014_2018[,11], start = c(2014, 1), frequency = 24)
+Eixample_NO2_2018 <- Eixample_NO2 %>% filter(year == 2018)
+Eixample_NO2_2018_09 <- Eixample_NO2 %>% filter(year == 2018 & month == 09)
+
+
+Eixample_NO2_2014_2018_ts <- ts(Eixample_NO2_2014_2018[,10], start = c(2014, 1), frequency = 24)
+Eixample_NO2_2018_ts <- ts(Eixample_NO2_2018[,10], start = c(2018, 1), frequency = 24)
+Eixample_NO2_2018_09_ts <- ts(Eixample_NO2_2014_2018[,10], frequency = 24)
+
+Eixample_NO2_2014_2018_year_ts <- ts(Eixample_NO2_2014_2018[,11], start = c(2014, 1), frequency = 8760)
+Eixample_NO2_ts <- ts(Eixample_NO2[,10],start = c(1995,1), frequency= 8760)
+
 plotNA.distributionBar(Eixample_NO2_2014_2018_ts, breaks = 12)
+plotNA.distributionBar(Eixample_NO2_2018_ts, breaks = 12)
+plotNA.distributionBar(Eixample_NO2_2018_09_ts, breaks = 9)
+
 plotNA.gapsize(Eixample_NO2_2014_2018_ts)
 statsNA(Eixample_NO2_2014_2018_ts)
+
 imp_2014_2018_NO2_Eixample_intp <- na.interpolation(Eixample_NO2_2014_2018_ts)
+imp_2018_NO2_Eixample_intp <- na.interpolation(Eixample_NO2_2018_ts)
+imp_2018_09_NO2_Eixample_intp <- na.interpolation(Eixample_NO2_2018_09_ts)
+
 
 Eixample_NO2_2014_2018 <- Eixample_NO2_2014_2018 %>% mutate(imp_2014_2018_NO2_Eixample_intp)
-plotNA.imputations(x.withNA = Eixample_NO2_2014_2018_ts, x.withImputations = imp_2014_2018_NO2_Eixample_intp)
-write.csv(Eixample_NO2_2014_2017, "/Users/ione/Desktop/Project_AIR/Data/Eixample_NO2.csv", row.names = F)
-write.csv(Eixample_NO2_2014_2018, "/Users/ione/Desktop/Project_AIR/Data/Eixample_NO2_2018.csv", row.names = F)
-write.csv(imp_2014_2018_NO2_Eixample_intp, "/Users/ione/Desktop/Project_AIR/Data/Eixample_NO2_ts.csv", row.names = F)
+Eixample_NO2_2018 <- Eixample_NO2_2018 %>% mutate(imp_2018_NO2_Eixample_intp)
+Eixample_NO2_2018_09 <- Eixample_NO2_2018_09 %>% mutate(imp_2018_09_NO2_Eixample_intp)
 
+plotNA.imputations(x.withNA = Eixample_NO2_2014_2018_ts, x.withImputations = imp_2014_2018_NO2_Eixample_intp)
+
+#Dataframes:
+write.csv(Eixample_NO2_2018, "/Users/ione/Desktop/Project_AIR/Data/Eixample_NO2_2018.csv", row.names = F)
+write.csv(Eixample_NO2_2014_2018, "/Users/ione/Desktop/Project_AIR/Data/Eixample_NO2_2014_2018.csv", row.names = F)
+write.csv(Eixample_NO2_2018_09, "/Users/ione/Desktop/Project_AIR/Data/Eixample_NO2_2014_2018_09.csv", row.names = F)
+
+#TS structures:
+write.csv(imp_2014_2018_NO2_Eixample_intp, "/Users/ione/Desktop/Project_AIR/Data/Eixample_NO2_all_ts.csv", row.names = F)
+write.csv(imp_2018_NO2_Eixample_intp, "/Users/ione/Desktop/Project_AIR/Data/Eixample_NO2_2018_ts.csv", row.names = F)
+write.csv(imp_2018_09_NO2_Eixample_intp, "/Users/ione/Desktop/Project_AIR/Data/Eixample_NO2_2018_09_ts.csv", row.names = F)
+
+#Analysis of the seasonality of NO2 evolution in Eixample:
+
+ggseasonplot(Eixample_NO2_2014_2018_year_ts, year.labels=TRUE, year.labels.left=TRUE) +
+  ylab("NO2") +
+  ggtitle("Seasonal plot: NO2 in Eixample")
 
 #I am going to use Gracia data for forecasting purposes:
 #Gracia:
