@@ -16,12 +16,15 @@ library(imputeTS)
 library(ggfortify)
 
 ##For forecasting purposes, we are going to try do it only for Eixample station ,as it has the higher
-##pollution levels, completeness of data as well as less number of NA-s. 
+##pollution levels and completeness of data. 
 
 #Let's read the csv we prepared previously in the first analysis script.
 
 Eixample <- read_csv('/Users/ione/Desktop/Project_AIR/data/Eixample_NO2_ts.csv')
-Eixample_NO2_2014_2018 <- read_csv('/Users/ione/Desktop/Project_AIR/data/Eixample_NO2_2018.csv')
+
+Eixample_NO2_2014_2018 <- read_csv('/Users/ione/Desktop/Project_AIR/data/Eixample_NO2_2014_2018.csv')
+Eixample_NO2_2018 <- read_csv('/Users/ione/Desktop/Project_AIR/data/Eixample_NO2_2018.csv')
+Eixample_NO2_2018_09 <- read_csv('/Users/ione/Desktop/Project_AIR/data/Eixample_NO2_2018_09.csv')
 View(Eixample_NO2_2014_2018 )
 dim(Eixample)
 summary(Eixample )
@@ -29,14 +32,43 @@ str(Eixample )
 
 ##Because the ts is again in dataframe format,let's transform it again to ts:
 
-Eixample_NO2_ts <- ts(Eixample_NO2_2014_2018[,11], start = c(2014, 1), frequency = 24)
-Eixample_NO2_year_ts <- ts(Eixample_NO2_2014_2018[,11], start = c(2014, 1), frequency = 8760)
-Eixample_ts <- ts(Eixample, start = c(2014, 1), frequency = 24)
-##Let's plot the ts to see how it looks:
-autoplot(Eixample_ts)
+Eixample_NO2_ts <- ts(Eixample_NO2_2014_2018[,10], frequency = 24)
+Eixample_NO2_2018_ts <- ts(Eixample_NO2_2018[,10], frequency = 24)
+Eixample_NO2_2018_09_ts <- ts(Eixample_NO2_2018_09[,10], frequency = 24)
 
-#For some reason it doesnt work when I give yearly seasonality:
-autoplot(Eixample_year_ts)
+
+#To do: test with seasonality equal to one year:
+Eixample_NO2_year_ts <- ts(Eixample_NO2_2014_2018[,11], start = c(2014, 1), frequency = 8760)
+
+##Let's plot the ts to see how it looks:
+autoplot(Eixample_NO2_ts)
+autoplot(Eixample_NO2_2018_ts)
+autoplot(Eixample_NO2_2018_09_ts)
+
+#We need to input missing values. We will do it by using interpolation method:
+plotNA.distributionBar(Eixample_NO2_ts, breaks = 12)
+plotNA.gapsize(Eixample_NO2_ts)
+statsNA(Eixample_NO2_ts)
+
+plotNA.distributionBar(Eixample_NO2_2018_ts , breaks = 12)
+plotNA.gapsize(Eixample_NO2_2018_ts )
+statsNA(Eixample_NO2_2018_ts )
+
+plotNA.distributionBar(Eixample_NO2_2018_09_ts , breaks = 12)
+plotNA.gapsize(Eixample_NO2_2018_09_ts )
+statsNA(Eixample_NO2_2018_09_ts )
+
+#NA imputation by interpolation method:
+
+imp_2014_2018_NO2_Eixample_intp <- na.interpolation(Eixample_NO2_ts)
+imp_2018_NO2_Eixample_intp <- na.interpolation(Eixample_NO2_2018_ts)
+imp_2018_09_NO2_Eixample_intp <- na.interpolation(Eixample_NO2_2018_09_ts)
+
+#Let's plot the new ts-s with the na interpolation:
+plotNA.imputations(x.withNA = Eixample_NO2_ts, x.withImputations = imp_2014_2018_NO2_Eixample_intp)
+plotNA.imputations(x.withNA = Eixample_NO2_2018_ts, x.withImputations = imp_2018_NO2_Eixample_intp)
+plotNA.imputations(x.withNA = Eixample_NO2_2018_09_ts, x.withImputations = imp_2018_09_NO2_Eixample_intp)
+
 
 #AUTOREGRESSION METHODS:
 
@@ -46,37 +78,135 @@ autoplot(Eixample_year_ts)
 #We are going to plot the autocorrelation coefficients to show the autocorrelation function or ACF. 
 #The plot is also known as a correlogram.
 
-ggAcf(Eixample_ts)
-ggAcf(Eixample_year_ts)
+ggAcf(imp_2014_2018_NO2_Eixample_intp)
+ggAcf(imp_2018_NO2_Eixample_intp)
+ggAcf(imp_2018_09_NO2_Eixample_intp)
 
-#We observe that in fact, we have a case of multiple seasonality, with peaks in lag=24 but also in 
-#lag=8760, meaning we have a daily season but also a yearly season. 
- 
-#We also have a trend, because the autocorrelations for small lags are large and positive, and observations nearby in time are also nearby in size. 
-#Our time series tend to have positive values that slowly decrease as the lags increase.
-# And because data are seasonal, the autocorrelations will be larger for the seasonal lags (at multiples of the seasonal frequency) than for other lags.
-#When data are both trended and seasonal, you see a combination of these effects. 
+#We observe that we have at least one seasonality with peaks in lag=24 and multiples.
+#We also have a trend, because the autocorrelations for small lags are large and positive, and observations nearby in time are similar size that decrease
+#as the lags increase.
 # The lags decrease because of the trend, and they have a “scalloped” shape due to the seasonality, 
-# in lag=24 and lag=8760 and multiples.
+# in lag=24 and multiples.
 
 
 # DATA PREPARATION: TRAIN and TEST 
 
-#To evaluate the model, we are going to generate multiple training sets, and see what works the best.
-#Train: 2014-Jan to 2018-Noc, Test: All month of Dic 2018
-#Train: Sept 2018-Nov 2018, Test: last 3 days in 2018-Dec
-
-
-train1 <- subset(Eixample, end=length(Eixample)-31*24)
+#To evaluate the model, we are going to generate 3 training sets, and see what works best.
+#Train1: 2014-01 to 2018-11, Test: 2018-12
+#Train2: 2018-01 to 2018-11, Test: 2018-12
+#Train3: 2018-09-1 to 2018-09-27, Test: 2018-09-28 to 2018-09-30
+train1 <- subset(imp_2014_2018_NO2_Eixample_intp, end=length(imp_2014_2018_NO2_Eixample_intp)-31*24)
 autoplot(train1)
-train2 <- subset(Eixample, start = 2018, end = length(Eixample) - 3*24)
+train2 <- subset(imp_2018_NO2_Eixample_intp, end = length(imp_2018_NO2_Eixample_intp) - 31*24)
 autoplot(train2)
+train3 <- subset(imp_2018_09_NO2_Eixample_intp, end = length(imp_2018_09_NO2_Eixample_intp) - 3*24)
+autoplot(train3)
+
+#We are going to start creating a baseline with some simple forecasting methods like naive, 
+#seasonal naive, and average methods, and we are going to compare them. 
+
+#Average method
+
+#For train1 dataset, with 4 year data, we are going to forecast 3 days
+fcavg1 <- meanf(train1, h=72)
+autoplot(fcavg1)
+summary(fcavg1)
+checkresiduals(fcavg1)
+accuracy(fcavg1,imp_2014_2018_NO2_Eixample_intp)
+
+fcavg2 <- meanf(train2, h=72)
+autoplot(fcavg2)
+summary(fcavg2)
+checkresiduals(fcavg2)
+accuracy(fcavg2,imp_2018_NO2_Eixample_intp)
+
+fcavg3 <- meanf(train3, h=72)
+autoplot(fcavg3)
+summary(fcavg3)
+checkresiduals(fcavg3)
+accuracy(fcavg3,imp_2018_09_NO2_Eixample_intp)
+
+##Seasonal Naïve METHOD:
+fcsn1 <- snaive(train1, h = 72)
+autoplot(fcsn1)
+summary(fcsn1)
+checkresiduals(fcsn1)
+accuracy(fcsn1,imp_2014_2018_NO2_Eixample_intp)
+
+fcsn2 <- snaive(train2, h = 72)
+autoplot(fcsn2 )
+summary(fcsn2)
+checkresiduals(fcsn2)
+accuracy(fcsn2,imp_2018_NO2_Eixample_intp)
+
+fcsn3 <- snaive(train3, h = 72)
+autoplot(fcsn3)
+summary(fcsn3)
+checkresiduals(fcsn3)
+accuracy(fcsn3,imp_2018_09_NO2_Eixample_intp)
+
+#If we compare the accuracy of all these methods and training datasets with different sizes, the 
+#best RMSE so far has been with Seasonal Naïve method with training data of 1 month.
+#See the table with all results.
+
+#We are going to apply some exponential smoothing forecasting methods.
+#Forecasts produced using exponential smoothing methods are weighted averages of past observations, 
+#with the weights decaying exponentially as the observations get older. 
+#In other words, the more recent the observation the higher the associated weight.
 
 
+#Holt-Winters METHOD:
+fhw1 <- hw(train1, seasonal = "additive", h = 72)
+# Look at fitted model using summary()
+summary(fhw1)
+# Plot the forecasts
+autoplot(fhw1)
+# Check that the residuals look like white noise
+checkresiduals(fhw1)
+#Calculate the accuracy of the model
+accuracy(fhw1, imp_2014_2018_NO2_Eixample_intp)
+
+fhw2 <- hw(train2, seasonal = "additive", h = 72)
+autoplot(fhw2)
+summary(fhw2)
+checkresiduals(fhw2)
+accuracy(fhw2, imp_2018_NO2_Eixample_intp)
 
 
+fhw3 <- hw(train3, seasonal = "additive", h = 72)
+autoplot(fhw3)
+summary(fhw3)
+checkresiduals(fhw3)
+accuracy(fhw3, imp_2018_09_NO2_Eixample_intp)
 
 
+#Automatic forecasting with exponential smoothing - ETS model
+#An alternative to estimating the parameters by minimising the sum of squared errors is to maximise the “likelihood”. 
+#The likelihood is the probability of the data arising from the specified model. 
+#Thus, a large likelihood is associated with a good model. 
+#For an additive error model, maximising the likelihood (assuming normally distributed errors) gives 
+#the same results as minimising the sum of squared errors.
+#However, different results will be obtained for multiplicative error models.
+
+
+# Function to return ETS forecasts
+fitets1 <- ets(train1)
+checkresiduals(fitets1)
+fitets1 %>% forecast(h = 72) %>% autoplot()
+#With 4 years training, it gives an ETS(M,N,M) model with no white noise(p-value < 2.2e-16)
+
+fitets2 <- ets(train2)
+checkresiduals(fitets2)
+fitets2 %>% forecast(h = 72) %>% autoplot()
+#With 11 months training, it gives an ETS(M,N,A) model with no white noise (p-value < 2.2e-16)
+
+fitets3 <- ets(train3)
+checkresiduals(fitets3)
+fitets3 %>% forecast(h = 72) %>% autoplot()
+#With one month training, it gives an ETS(M, Ad, M) model with no white noise (p-value = 7.387e-10)
+
+
+#ARIMA MODELS
 
 #Augmented Dickey-Fuller Test
 adf.test(train1, alternative = "stationary")
@@ -86,37 +216,6 @@ Pacf(train1)
 #Let's try to decompose the data:
 decomp = stl(Eixample)
 autoplot(decomp)
-
-##NAIVE METHOD:
-fc1 <- snaive(train1, h = 24)
-accuracy(fc1, Eixample)
-autoplot(fc1)
-checkresiduals(fc1)
-
-##HOLT METHOD:
-fcholt <- holt(train1, h=24)
-# Look at fitted model using summary()
-summary(fcholt)
-# Plot the forecasts
-autoplot(fcholt)
-# Check that the residuals look like white noise
-checkresiduals(fcholt)
-accuracy(fcholt, Eixample)
-
-#Holt-Winters METHOD:
-fhw <- hw(train1, seasonal = "additive", h = 24)
-# Check if residuals look like white noise
-checkresiduals(fhw)
-autoplot(fhw)
-accuracy(fhw, Eixample)
-
-
-#Automatic forecasting with exponential smoothing - ETS model
-# Function to return ETS forecasts
-fitets <- ets(train1)
-checkresiduals(fitets)
-fitets %>% forecast(h = 24) %>% autoplot()
-
 #ARIMA
 fit <- auto.arima(train1)
 # Summarize the fitted model
