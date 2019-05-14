@@ -14,6 +14,7 @@ library(RcppRoll)
 library(kableExtra)
 library(imputeTS)
 library(ggfortify)
+library(urca)
 
 ##For forecasting purposes, we are going to try do it only for Eixample station ,as it has the higher
 ##pollution levels and completeness of data. 
@@ -202,11 +203,26 @@ fitets2 %>% forecast(h = 72) %>% autoplot()
 
 fitets3 <- ets(train3)
 checkresiduals(fitets3)
-fitets3 %>% forecast(h = 72) %>% autoplot()
+fitets3 %>% forecast(h = 24) %>% autoplot()
 #With one month training, it gives an ETS(M, Ad, M) model with no white noise (p-value = 7.387e-10)
 
+#The forecast doesnt look too good, the time-series might be a bit more complex than it seems with 
+#multiple seasonalities ( day, week, year).
 
 #ARIMA MODELS
+
+#A stationary time series is one whose properties do not depend on the time at which the series is observed.
+#So time series with trends, or with seasonality, are not stationary, 
+#and white noise series are stationary
+#Stationary time series don't have a predictable pattern in the long term. 
+
+#Kwiatkowski-Phillips-Schmidt-Shin (KPSS) test (Kwiatkowski, Phillips, Schmidt, & Shin, 1992).
+#In this test, the null hypothesis is that the data are stationary, and we look for evidence 
+#that the null hypothesis is false. 
+#Consequently, small p-values (e.g., less than 0.05) suggest that differencing is required.
+
+
+
 
 #Augmented Dickey-Fuller Test
 adf.test(train1, alternative = "stationary")
@@ -222,6 +238,7 @@ fit <- auto.arima(train1)
 summary(fit)
 # Plot 2-year forecasts
 fit %>% forecast(h = 24) %>% autoplot()
+
 
 #ARIMA with FOURIER
 
