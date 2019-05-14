@@ -15,9 +15,10 @@ library(kableExtra)
 library(imputeTS)
 library(ggfortify)
 library(urca)
+library(forecast)
 
 ##For forecasting purposes, we are going to try do it only for Eixample station ,as it has the higher
-##pollution levels and completeness of data. 
+##pollution levels and completeness of data.
 
 #Let's read the csv we prepared previously in the first analysis script.
 
@@ -73,10 +74,10 @@ plotNA.imputations(x.withNA = Eixample_NO2_2018_09_ts, x.withImputations = imp_2
 
 #AUTOREGRESSION METHODS:
 
-#Let's analyze the data to see what is the trend, seasonality, and what is the 
+#Let's analyze the data to see what is the trend, seasonality, and what is the
 #autocorrelation level or the linear relationship between lagged values of our time series.
 
-#We are going to plot the autocorrelation coefficients to show the autocorrelation function or ACF. 
+#We are going to plot the autocorrelation coefficients to show the autocorrelation function or ACF.
 #The plot is also known as a correlogram.
 
 ggAcf(imp_2014_2018_NO2_Eixample_intp)
@@ -86,11 +87,11 @@ ggAcf(imp_2018_09_NO2_Eixample_intp)
 #We observe that we have at least one seasonality with peaks in lag=24 and multiples.
 #We also have a trend, because the autocorrelations for small lags are large and positive, and observations nearby in time are similar size that decrease
 #as the lags increase.
-# The lags decrease because of the trend, and they have a “scalloped” shape due to the seasonality, 
+# The lags decrease because of the trend, and they have a “scalloped” shape due to the seasonality,
 # in lag=24 and multiples.
 
 
-# DATA PREPARATION: TRAIN and TEST 
+# DATA PREPARATION: TRAIN and TEST
 
 #To evaluate the model, we are going to generate 3 training sets, and see what works best.
 #Train1: 2014-01 to 2018-11, Test: 2018-12
@@ -103,61 +104,61 @@ autoplot(train2)
 train3 <- subset(imp_2018_09_NO2_Eixample_intp, end = length(imp_2018_09_NO2_Eixample_intp) - 3*24)
 autoplot(train3)
 
-#We are going to start creating a baseline with some simple forecasting methods like naive, 
-#seasonal naive, and average methods, and we are going to compare them. 
+#We are going to start creating a baseline with some simple forecasting methods like naive,
+#seasonal naive, and average methods, and we are going to compare them.
 
 #Average method
 
 #For train1 dataset, with 4 year data, we are going to forecast 3 days
-fcavg1 <- meanf(train1, h=72)
+fcavg1 <- meanf(train1, h=24)
 autoplot(fcavg1)
 summary(fcavg1)
 checkresiduals(fcavg1)
 accuracy(fcavg1,imp_2014_2018_NO2_Eixample_intp)
 
-fcavg2 <- meanf(train2, h=72)
+fcavg2 <- meanf(train2, h=24)
 autoplot(fcavg2)
 summary(fcavg2)
 checkresiduals(fcavg2)
 accuracy(fcavg2,imp_2018_NO2_Eixample_intp)
 
-fcavg3 <- meanf(train3, h=72)
+fcavg3 <- meanf(train3, h=24)
 autoplot(fcavg3)
 summary(fcavg3)
 checkresiduals(fcavg3)
 accuracy(fcavg3,imp_2018_09_NO2_Eixample_intp)
 
 ##Seasonal Naïve METHOD:
-fcsn1 <- snaive(train1, h = 72)
+fcsn1 <- snaive(train1, h = 24)
 autoplot(fcsn1)
 summary(fcsn1)
 checkresiduals(fcsn1)
 accuracy(fcsn1,imp_2014_2018_NO2_Eixample_intp)
 
-fcsn2 <- snaive(train2, h = 72)
+fcsn2 <- snaive(train2, h = 24)
 autoplot(fcsn2 )
 summary(fcsn2)
 checkresiduals(fcsn2)
 accuracy(fcsn2,imp_2018_NO2_Eixample_intp)
 
-fcsn3 <- snaive(train3, h = 72)
+fcsn3 <- snaive(train3, h = 24)
 autoplot(fcsn3)
 summary(fcsn3)
 checkresiduals(fcsn3)
 accuracy(fcsn3,imp_2018_09_NO2_Eixample_intp)
 
-#If we compare the accuracy of all these methods and training datasets with different sizes, the 
+#If we compare the accuracy of all these methods and training datasets with different sizes, the
 #best RMSE so far has been with Seasonal Naïve method with training data of 1 month.
 #See the table with all results.
 
 #We are going to apply some exponential smoothing forecasting methods.
-#Forecasts produced using exponential smoothing methods are weighted averages of past observations, 
-#with the weights decaying exponentially as the observations get older. 
+#Forecasts produced using exponential smoothing methods are weighted averages of past observations,
+#with the weights decaying exponentially as the observations get older.
 #In other words, the more recent the observation the higher the associated weight.
 
 
 #Holt-Winters METHOD:
-fhw1 <- hw(train1, seasonal = "additive", h = 72)
+fhw1 <- hw(train1, seasonal = "additive", h = 24)
 # Look at fitted model using summary()
 summary(fhw1)
 # Plot the forecasts
@@ -167,14 +168,14 @@ checkresiduals(fhw1)
 #Calculate the accuracy of the model
 accuracy(fhw1, imp_2014_2018_NO2_Eixample_intp)
 
-fhw2 <- hw(train2, seasonal = "additive", h = 72)
+fhw2 <- hw(train2, seasonal = "additive", h = 24)
 autoplot(fhw2)
 summary(fhw2)
 checkresiduals(fhw2)
 accuracy(fhw2, imp_2018_NO2_Eixample_intp)
 
 
-fhw3 <- hw(train3, seasonal = "additive", h = 72)
+fhw3 <- hw(train3, seasonal = "additive", h = 24)
 autoplot(fhw3)
 summary(fhw3)
 checkresiduals(fhw3)
@@ -182,10 +183,10 @@ accuracy(fhw3, imp_2018_09_NO2_Eixample_intp)
 
 
 #Automatic forecasting with exponential smoothing - ETS model
-#An alternative to estimating the parameters by minimising the sum of squared errors is to maximise the “likelihood”. 
-#The likelihood is the probability of the data arising from the specified model. 
-#Thus, a large likelihood is associated with a good model. 
-#For an additive error model, maximising the likelihood (assuming normally distributed errors) gives 
+#An alternative to estimating the parameters by minimising the sum of squared errors is to maximise the “likelihood”.
+#The likelihood is the probability of the data arising from the specified model.
+#Thus, a large likelihood is associated with a good model.
+#For an additive error model, maximising the likelihood (assuming normally distributed errors) gives
 #the same results as minimising the sum of squared errors.
 #However, different results will be obtained for multiplicative error models.
 
@@ -193,53 +194,113 @@ accuracy(fhw3, imp_2018_09_NO2_Eixample_intp)
 # Function to return ETS forecasts
 fitets1 <- ets(train1)
 checkresiduals(fitets1)
-fitets1 %>% forecast(h = 72) %>% autoplot()
+fitets1 %>% forecast(h = 24) %>% autoplot()
 #With 4 years training, it gives an ETS(M,N,M) model with no white noise(p-value < 2.2e-16)
 
 fitets2 <- ets(train2)
 checkresiduals(fitets2)
-fitets2 %>% forecast(h = 72) %>% autoplot()
+fitets2 %>% forecast(h =24) %>% autoplot()
 #With 11 months training, it gives an ETS(M,N,A) model with no white noise (p-value < 2.2e-16)
 
 fitets3 <- ets(train3)
 checkresiduals(fitets3)
 fitets3 %>% forecast(h = 24) %>% autoplot()
+e3 <- fitets3 %>% forecast(h = 24) %>% accuracy(imp_2018_09_NO2_Eixample_intp)
+e3
+#RMSE = 9.452193
 #With one month training, it gives an ETS(M, Ad, M) model with no white noise (p-value = 7.387e-10)
 
-#The forecast doesnt look too good, the time-series might be a bit more complex than it seems with 
+#The forecast doesnt look too good, the time-series might be a bit more complex than it seems with
 #multiple seasonalities ( day, week, year).
 
 #ARIMA MODELS
 
 #A stationary time series is one whose properties do not depend on the time at which the series is observed.
-#So time series with trends, or with seasonality, are not stationary, 
+#So time series with trends, or with seasonality, are not stationary,
 #and white noise series are stationary
-#Stationary time series don't have a predictable pattern in the long term. 
+#Stationary time series don't have a predictable pattern in the long term.
 
 #Kwiatkowski-Phillips-Schmidt-Shin (KPSS) test (Kwiatkowski, Phillips, Schmidt, & Shin, 1992).
-#In this test, the null hypothesis is that the data are stationary, and we look for evidence 
-#that the null hypothesis is false. 
+#In this test, the null hypothesis is that the data are stationary, and we look for evidence
+#that the null hypothesis is false.
 #Consequently, small p-values (e.g., less than 0.05) suggest that differencing is required.
 
+train1 %>% ur.kpss() %>% summary()
+
+#Value of test-statistic is: 1.9162 so we can discard that it's a stationary time series, no
+#differencing is required.
+ndiffs(train1)
+
+#This function tells as that one difference is required to make the data stationary.
+#We will use the parameter d=1.
+#This other function tells us if we need stationary differencing:
+nsdiffs(train1)
+#The result is 0 so no need for seasonal differencing (D=0).
+#To implement a seasonal ARIMA model, we need to determine parameters {p,d,q}{P,D,Q}
+
+#The data are clearly non-stationary, with some seasonality, so we will first take
+#a seasonal difference.
+#The seasonally differenced data also appear to be non-stationary,
+#so we take an additional first difference,
 
 
+train1 %>% diff(lag=24) %>% ggtsdisplay()
+train1 %>% diff(lag=24) %>% diff() %>% ggtsdisplay()
 
-#Augmented Dickey-Fuller Test
-adf.test(train1, alternative = "stationary")
-Pacf(train1)
-#No differencing required?
+#Our aim now is to find an appropriate ARIMA model based on the ACF and PACF.
+#The significant spike at lag 24 in the ACF suggests a seasonal MA(1) component (Q=1). The
+#spikes in lag 24 for ACF I will include a non-seasonal AR component p=3
+#We will try arima(3,1,1)(3,0,1)
 
-#Let's try to decompose the data:
-decomp = stl(Eixample)
-autoplot(decomp)
-#ARIMA
-fit <- auto.arima(train1)
-# Summarize the fitted model
+fit <- Arima(train1, order=c(3,1,1), seasonal=c(3,0,1),method="CSS")
 summary(fit)
-# Plot 2-year forecasts
-fit %>% forecast(h = 24) %>% autoplot()
+checkresiduals(fit)
+#There is bit spike in lag=23 in ACF so the AR component should be bigger. We'll try a model
+#with p=4, P=4 and q=0, Q=0
 
+fitarima1 <- Arima(train1, order=c(4,1,0), seasonal=c(4,0,0),method="CSS")
+summary(fitarima1)
+checkresiduals(fitarima1)
 
+fitarima2 <- Arima(train1, order=c(5,1,0), seasonal=c(5,0,0),method="CSS")
+summary(fitarima2)
+checkresiduals(fitarima2)
+
+fitarima3 <- Arima(train1, order=c(6,1,0), seasonal=c(6,0,0),method="CSS")
+summary(fitarima3)
+checkresiduals(fitarima3)
+
+fitarima4 <- Arima(train1, order=c(7,1,0), seasonal=c(7,0,0),method="CSS")
+summary(fitarima4)
+checkresiduals(fitarima4)
+
+fitautoarima1 <- auto.arima(train1)
+summary(fitautoarima1)
+checkresiduals(fitautoarima1)
+#ARIMA(5,1,0)(2,0,0)[24]
+#AICc=315571.7
+fitautoarima1 %>% forecast( h=24) %>% autoplot()
+a1 <- fitautoarima1 %>% forecast(h = 24) %>% accuracy(imp_2014_2018_NO2_Eixample_intp)
+a1
+#RMSE=18.928269
+fitautoarima2 <- auto.arima(train2)
+#ARIMA(1,0,1)(2,0,0)[24] with non-zero mean
+#AICc=58782.28
+summary(fitautoarima2)
+checkresiduals(fitautoarima2)
+fitautoarima2 %>% forecast( h=24) %>% autoplot()
+a2 <- fitautoarima2 %>% forecast(h = 24) %>% accuracy(imp_2018_NO2_Eixample_intp)
+a2
+#RMSE=27.989931
+fitautoarima3 <- auto.arima(train3)
+summary(fitautoarima3)
+checkresiduals(fitautoarima3)
+#ARIMA(1,0,0)(0,0,1)[24] with non-zero mean
+#AICc=4688.08
+fitautoarima3 %>% forecast(h=24) %>% autoplot()
+a3 <- fitautoarima3 %>% forecast(h = 24) %>% accuracy(imp_2018_09_NO2_Eixample_intp)
+a3
+#RMSE = 12.34
 #ARIMA with FOURIER
 
 #ARIMA WITH WEATHER
