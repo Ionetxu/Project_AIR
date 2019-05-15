@@ -261,18 +261,30 @@ checkresiduals(fit)
 fitarima1 <- Arima(train1, order=c(4,1,0), seasonal=c(4,0,0),method="CSS")
 summary(fitarima1)
 checkresiduals(fitarima1)
+ar1 <- fitarima1 %>% forecast(h = 24) %>% accuracy(imp_2014_2018_NO2_Eixample_intp)
+ar1
+#RMSE=18.52
 
 fitarima2 <- Arima(train1, order=c(5,1,0), seasonal=c(5,0,0),method="CSS")
 summary(fitarima2)
 checkresiduals(fitarima2)
+ar2 <- fitarima2 %>% forecast(h = 24) %>% accuracy(imp_2014_2018_NO2_Eixample_intp)
+ar2
+#RMSE=18.02
 
 fitarima3 <- Arima(train1, order=c(6,1,0), seasonal=c(6,0,0),method="CSS")
 summary(fitarima3)
 checkresiduals(fitarima3)
+ar3 <- fitarima3 %>% forecast(h = 24) %>% accuracy(imp_2014_2018_NO2_Eixample_intp)
+ar3
+#RMSE=19.40
 
 fitarima4 <- Arima(train1, order=c(7,1,0), seasonal=c(7,0,0),method="CSS")
 summary(fitarima4)
 checkresiduals(fitarima4)
+ar4 <- fitarima4 %>% forecast(h = 24) %>% accuracy(imp_2014_2018_NO2_Eixample_intp)
+ar4
+#RMSE=17.12
 
 fitautoarima1 <- auto.arima(train1)
 summary(fitautoarima1)
@@ -283,6 +295,7 @@ fitautoarima1 %>% forecast( h=24) %>% autoplot()
 a1 <- fitautoarima1 %>% forecast(h = 24) %>% accuracy(imp_2014_2018_NO2_Eixample_intp)
 a1
 #RMSE=18.928269
+
 fitautoarima2 <- auto.arima(train2)
 #ARIMA(1,0,1)(2,0,0)[24] with non-zero mean
 #AICc=58782.28
@@ -292,6 +305,8 @@ fitautoarima2 %>% forecast( h=24) %>% autoplot()
 a2 <- fitautoarima2 %>% forecast(h = 24) %>% accuracy(imp_2018_NO2_Eixample_intp)
 a2
 #RMSE=27.989931
+
+
 fitautoarima3 <- auto.arima(train3)
 summary(fitautoarima3)
 checkresiduals(fitautoarima3)
@@ -303,7 +318,6 @@ a3
 #RMSE = 12.34
 #ARIMA with FOURIER
 
-#ARIMA WITH WEATHER
 
 #TBATS model
 
