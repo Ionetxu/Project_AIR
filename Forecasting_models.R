@@ -306,7 +306,6 @@ a2 <- fitautoarima2 %>% forecast(h = 24) %>% accuracy(imp_2018_NO2_Eixample_intp
 a2
 #RMSE=27.989931
 
-
 fitautoarima3 <- auto.arima(train3)
 summary(fitautoarima3)
 checkresiduals(fitautoarima3)
@@ -316,7 +315,17 @@ fitautoarima3 %>% forecast(h=24) %>% autoplot()
 a3 <- fitautoarima3 %>% forecast(h = 24) %>% accuracy(imp_2018_09_NO2_Eixample_intp)
 a3
 #RMSE = 12.34
-#ARIMA with FOURIER
+
+#Complex seasonality
+#With pollution data, I think we have a case of multiple seasonality with daily, weekly and yearly
+#seasons. To deal with these we should adapt our models
+
+p1 <- autoplot(train3)
+p2 <- autoplot(window(calls, end=7))
+gridExtra::grid.arrange(p1,p2)
+
+train1 %>% mstl() %>%
+  autoplot() + xlab("Week")
 
 
 #TBATS model
