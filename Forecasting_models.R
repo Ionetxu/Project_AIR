@@ -316,18 +316,26 @@ a3 <- fitautoarima3 %>% forecast(h = 24) %>% accuracy(imp_2018_09_NO2_Eixample_i
 a3
 #RMSE = 12.34
 
-#Complex seasonality
+#Complex seasonality - NEEDS WORK
 #With pollution data, I think we have a case of multiple seasonality with daily, weekly and yearly
 #seasons. To deal with these we should adapt our models
+#If the time series is relatively short so that only one type of seasonality is present,
+#then it will be possible to use one of the single-seasonal methods like ETS or a seasonal ARIMA model.
+#But when the time series is long enough so that multiple seasonal periods appear, it will be necessary to use STL,
+#dynamic harmonic regression or TBATS.
 
-p1 <- autoplot(train3)
-p2 <- autoplot(window(calls, end=7))
-gridExtra::grid.arrange(p1,p2)
+#STL with multiple seasonal periods
+train1 %>% mstl() %>% autoplot()
 
-train1 %>% mstl() %>%
-  autoplot() + xlab("Week")
-
+train3 %>%  stlf() %>% autoplot()
 
 #TBATS model
+train1 %>% tbats() -> fit_tbats
+summary(fit_tbats)
+fc1 <- forecast(fit_tbats, h=8760)
+autoplot(fc1)
 
-
+train2 %>% tbats() -> fit_tbats2
+summary(fit_tbats2)
+fc2 <- forecast(fit_tbats2, h=8760)
+autoplot(fc2)
