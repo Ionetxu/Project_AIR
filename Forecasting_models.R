@@ -337,5 +337,10 @@ autoplot(fc1)
 
 train2 %>% tbats() -> fit_tbats2
 summary(fit_tbats2)
-fc2 <- forecast(fit_tbats2, h=8760)
+fc2 <- forecast(fit_tbats2, h=24)
 autoplot(fc2)
+
+train3 %>% tbats() -> fit_tbats3
+summary(fit_tbats3)
+fc3 <- forecast(fit_tbats3, h=24)
+autoplot(fc3)
