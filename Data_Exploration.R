@@ -88,7 +88,7 @@ ggplot( aes(x = as.Date(dt), y = mean), data =Eixample_NO2_month ) +
 
 
 #2. What is the trend of the NO2 and PM10 pollutants in Barcelona overall in the last 10 years?
-#See plots from before, they are slightly negative trend.
+#See plots from initial analysis - no need for this
 #3. What is the average yearly amount of NO2 in each station in Barcelona by year from 2014 to 2018? Does it pass the limit in any station?
 
 Eixample_NO2_year <- Eixample_NO2 %>%
@@ -100,12 +100,10 @@ summary(Eixample_NO2_year)
 #by WHO and is followed by European Union recommendations.
 View(Eixample_NO2_year)
 ggplot(Eixample_NO2_year[-6,],aes(x=as.Date(dt),y=mean)) +
-  geom_line(alpha = 0.5) +
-  hline(inter)
-
+  geom_line(alpha = 0.5)
 
 #4.What is the average yearly amount of PM10 in each station in Barcelona by year from 2014 to 2018? Does it pass the limit in any station?
-#5.How many times does NO2 pass the max hourly limit per year and per station?
+#5.How many times does NO2 pass the max hourly limit per year and per station? 0
 #6.How many times does PM10 pass the max hourly limit per year and per station?
 #7.What is the max day of the week with higher avg NO2, PM10 pollution normally? And the minimum?
 #8.Is there any difference between weekday and weekend?
@@ -113,7 +111,26 @@ ggplot(Eixample_NO2_year[-6,],aes(x=as.Date(dt),y=mean)) +
 #10.What is the most polluted station? And the least?
 
 #11.What is the relationship with weather and pollution? What is the component with more correlation?
+
+#Let's load the data from Raval- zoo in Barcelona (EMA = X4)
+Weather_Raval <- read_csv('/Users/ione/Desktop/Project_AIR/data/Jlerchundi_X4_14-19.csv')
+summary(Weather_Raval)
+head(Weather_Raval)
+tail(Weather_Raval)
+
+#I am going to assume these data covers main city area of Barcelona, and I am going to compare it with
+#data in Eixample.
+#I am going to change the name of "DATA (T.U.)" to make sure the common variables share the same name
+#and transform the data into a date format POSIXct.
+Weather_Raval <- Weather_Raval %>% rename(dt="DATA (T.U.)")
+Weather_Rava$dt <- as.POSIXct(Weather_Raval$dt)
+
+#I am going to join the Eixample data with weather in Raval with dt field.
+
+
+
 #12.What are the conditions with bad pollution in BCN? And conditions for good pollution?
+
 
 #13.Are hospitalizations with respiratory issues affected by peaks of pollution?
 #14.Are hospitalizations with heart issues affected by peaks of pollution?
