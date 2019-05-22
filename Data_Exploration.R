@@ -18,6 +18,8 @@ library(urca)
 library(forecast)
 library(hydroTSM)
 library(tidyquant)
+library(reshape)
+library(ggpubr)
 
 # Data Exploration
 
@@ -151,18 +153,77 @@ cormat <- round(cor(Eixample_NO2_weather_cor_NA),2)
 head(cormat)
 
 #Looking at the data, the only variable that have some correlation with the NO2 values
-#in Eixample are Wind speed ( with correlation coefficient of -0.31 and 0.32 for max speed), and
-# atmospheric pressure with coefficient of 0.2. I am going to plot some graphs to see
+#in Eixample are Wind speed ( with correlation coefficient of -0.31 and 0.32 for max speed), Wind direction
+# with coefficient of -0.15, and atmospheric pressure with positive coefficient of 0.2. I am going to plot some graphs to see
 # this relationships a bit further.
 
+#First we are going to reshape the matrix so that we can plot using ggplot. HEATMAP:
+melted_cormat <- melt(cormat)
+head(melted_cormat)
+
+ggplot(data = melted_cormat, aes(x=X1, y=X2, fill=value)) +
+  geom_tile()
+
+#Let's improve the heatmap a bit more:
+# Get lower triangle of the correlation matrix
+get_lower_tri<-function(cormat){
+  cormat[upper.tri(cormat)] <- NA
+  return(cormat)
+}
+# Get upper triangle of the correlation matrix
+get_upper_tri <- function(cormat){
+  cormat[lower.tri(cormat)]<- NA
+  return(cormat)
+}
+reorder_cormat <- function(cormat){
+  # Use correlation between variables as distance
+  dd <- as.dist((1-cormat)/2)
+  hc <- hclust(dd)
+  cormat <-cormat[hc$order, hc$order]
+}
+cormat <- reorder_cormat(cormat)
+upper_tri <- get_upper_tri(cormat)
+upper_tri
 
 
-#All values of for wind correlations are NA because there must be some NA values. I will now try to
-# fill them up.
-sum(is.na(Eixample_NO2_weather_cor$VV10))
+melted_cormat <- melt(upper_tri, na.rm = TRUE)
+
+# Heatmap
+
+ggplot(data = melted_cormat, aes(X1, X2, fill = value))+
+  geom_tile(color = "white")+
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white",
+                       midpoint = 0, limit = c(-1,1), space = "Lab",
+                       name="Pearson\nCorrelation") +
+  theme_minimal()+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1,
+                                   size = 12, hjust = 1))+
+  coord_fixed()
+
+head(Eixample_NO2_weather_cor_NA)
+#The heatplot doesnt show what I wanted, so I will now try to plot the variables with more correlation,
+# the NO2 pollution with wind speed & direction as well as Atmospheric pressure.
+
+ggscatter(Eixample_NO2_weather_cor_NA, x = "value_intp", y = "P",
+          add = "reg.line", conf.int = TRUE,
+          cor.coef = TRUE, cor.method = "pearson", alpha = 0.1,
+          xlab = "NO2 (µg/m3)", ylab = "Atmospheric pressure (mbar)", title = "NO2 and P relationship in Eixample")
+
+#In the plot we can see that the NO2 levels are slightly higher with higher P.
+
+#Let'a analyze the relationship between NO2 levels and Wind speed.
+ggscatter(Eixample_NO2_weather_cor_NA, x = "value_intp", y = "VV10",
+          add = "reg.line", conf.int = TRUE,
+          cor.coef = TRUE, cor.method = "pearson", alpha = 0.1,
+          xlab = "NO2 (µg/m3)", ylab = "Wind speed (km/h)", title = "NO2 and Wind speed relationship in Eixample")
+
+#This graph tells us that when the wind is intense, the pollution tends to be lower. The lower the wind
+#speed, the higher the pollution.
+
+#Let's analyze the effect of the wind direction to NO2 levels.
+
 
 #12.What are the conditions with bad pollution in BCN? And conditions for good pollution?
-
 
 #13.Are hospitalizations with respiratory issues affected by peaks of pollution?
 #14.Are hospitalizations with heart issues affected by peaks of pollution?
