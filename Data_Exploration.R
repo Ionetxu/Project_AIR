@@ -112,22 +112,54 @@ ggplot(Eixample_NO2_year[-6,],aes(x=as.Date(dt),y=mean)) +
 
 #11.What is the relationship with weather and pollution? What is the component with more correlation?
 
-#Let's load the data from Raval- zoo in Barcelona (EMA = X4)
-Weather_Raval <- read_csv('/Users/ione/Desktop/Project_AIR/data/Jlerchundi_X4_14-19.csv')
-summary(Weather_Raval)
-head(Weather_Raval)
-tail(Weather_Raval)
+#Let's load the data from Raval- zoo in Barcelona (EMA = X4). I'm going to use the weather data from
+#Raval to compare it with pollution measured in Eixample.
+
+Weather_bcn <- read_csv('/Users/ione/Desktop/Project_AIR/data/Jlerchundi_X4_14-19.csv')
+summary(Weather_bcn)
+head(Weather_bcn)
+tail(Weather_bcn)
+
+#Data column is in format "1/1/2014 1:00", and it's a character, so I'll change it to be same as
+#the pollution format.
+Weather_bcn <- Weather_bcn %>% rename(dt="DATA (T.U.)")
+Weather_bcn$dt <- parse_date_time(Weather_bcn$dt, "dmy HM", truncated = 3)
 
 #I am going to assume these data covers main city area of Barcelona, and I am going to compare it with
-#data in Eixample.
-#I am going to change the name of "DATA (T.U.)" to make sure the common variables share the same name
-#and transform the data into a date format POSIXct.
-Weather_Raval <- Weather_Raval %>% rename(dt="DATA (T.U.)")
-Weather_Rava$dt <- as.POSIXct(Weather_Raval$dt)
+#data in Eixample.I am going to join the Eixample data with weather in Raval with dt field.
 
-#I am going to join the Eixample data with weather in Raval with dt field.
+Eixample_NO2_weather <- merge(Eixample_NO2,Weather_bcn,by="dt" )
+summary(Eixample_NO2_weather)
+
+#I am going to study the correlations between variables. I will first create a correlation matrix:
+
+cormat <- round(cor(Eixample_NO2_weather),2)
+
+#It doesnt work because all features must be numeric.I will also choose variables that are interesting.
+
+sapply(Eixample_NO2_weather, is.numeric)
+Eixample_NO2_weather_num_data <- Eixample_NO2_weather[, sapply(Eixample_NO2_weather, is.numeric)]
+head(Eixample_NO2_weather_num_data)
+Eixample_NO2_weather_cor <- dplyr::select(Eixample_NO2_weather_num_data, -c("station_code", "latitude", "longitude","year","month","day","value"))
+head(Eixample_NO2_weather_cor)
+sum(is.na(Eixample_NO2_weather_cor))
+#I have 87 values that are NA-s. I need to correct them otherwise the cor matrix won't work.
+Eixample_NO2_weather_cor_NA <-Eixample_NO2_weather_cor[complete.cases(Eixample_NO2_weather_cor), ]
+sum(is.na(Eixample_NO2_weather_cor_NA))
+#Now I will calculate the correlation matrix with only numeric values:
+cormat <- round(cor(Eixample_NO2_weather_cor_NA),2)
+head(cormat)
+
+#Looking at the data, the only variable that have some correlation with the NO2 values
+#in Eixample are Wind speed ( with correlation coefficient of -0.31 and 0.32 for max speed), and
+# atmospheric pressure with coefficient of 0.2. I am going to plot some graphs to see
+# this relationships a bit further.
 
 
+
+#All values of for wind correlations are NA because there must be some NA values. I will now try to
+# fill them up.
+sum(is.na(Eixample_NO2_weather_cor$VV10))
 
 #12.What are the conditions with bad pollution in BCN? And conditions for good pollution?
 
