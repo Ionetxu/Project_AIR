@@ -20,6 +20,7 @@ library(hydroTSM)
 library(tidyquant)
 library(reshape)
 library(ggpubr)
+library(openair)
 
 # Data Exploration
 
@@ -37,7 +38,7 @@ Eixample_NO2 <- read_csv('/Users/ione/Desktop/Project_AIR/data/Eixample_NO2_2014
 head(Eixample_NO2)
 summary(Eixample_NO2)
 
-names(Eixample_NO2)[names(Eixample_NO2) == "imp_2014_2018_NO2_Eixample_intp"] <- "value_intp"
+names(Eixample_NO2)[names(Eixample_NO2) == "imp_2014_2018_NO2_Eixample_intp"] <- "NO2"
 summary(Eixample_NO2)
 
 #I am going to do the following analysis for NO2 in Eixample by using xts objects from zoo package.
@@ -50,7 +51,7 @@ summary(Eixample_NO2)
 
 stat_fun <- function(x) c(min = min(x), max = max(x), mean = mean(x))
 Eixample_NO2_day <- Eixample_NO2 %>%
-  tq_transmute(select     = value_intp,
+  tq_transmute(select     = NO2,
                mutate_fun = apply.daily,
                FUN        = stat_fun)
 summary(Eixample_NO2_day)
@@ -71,7 +72,7 @@ autoplot(Eixample_NO2_day_xts["2018-01"], facets = FALSE)
 #Not really very representative to see if there is a weekly seasonality. Let's analyze monthly data.
 
 Eixample_NO2_month <- Eixample_NO2 %>%
-  tq_transmute(select     = value_intp,
+  tq_transmute(select     = NO2,
                mutate_fun = apply.monthly,
                FUN        = stat_fun)
 summary(Eixample_NO2_month)
@@ -80,7 +81,7 @@ summary(Eixample_NO2_month_xts)
 autoplot(Eixample_NO2_month_xts$mean)
 
 ggplot( aes(x = as.Date(dt), y = mean), data =Eixample_NO2_month ) +
-  geom_point(alpha = 0.5) +
+  geom_line(alpha = 0.5) +
   labs( x = "Time", y = "NO2 (µg/m3)", title = "NO2(µg/m3) - Eixample NO2 monthly avg")+
   geom_smooth(color = "grey", alpha = 0.2) +
   scale_x_date(breaks='6 months')
@@ -94,7 +95,7 @@ ggplot( aes(x = as.Date(dt), y = mean), data =Eixample_NO2_month ) +
 #3. What is the average yearly amount of NO2 in each station in Barcelona by year from 2014 to 2018? Does it pass the limit in any station?
 
 Eixample_NO2_year <- Eixample_NO2 %>%
-  tq_transmute(select     = value_intp,
+  tq_transmute(select     = NO2,
                mutate_fun = apply.yearly,
                FUN        = stat_fun)
 summary(Eixample_NO2_year)
@@ -124,9 +125,12 @@ tail(Weather_bcn)
 
 #Data column is in format "1/1/2014 1:00", and it's a character, so I'll change it to be same as
 #the pollution format.
-Weather_bcn <- Weather_bcn %>% rename(dt="DATA (T.U.)")
-Weather_bcn$dt <- parse_date_time(Weather_bcn$dt, "dmy HM", truncated = 3)
 
+names(Weather_bcn)[names(Weather_bcn) == "DATA (T.U.)"] <- "dt"
+names(Weather_bcn)[names(Weather_bcn) == "DV10"] <- "wd"
+names(Weather_bcn)[names(Weather_bcn) == "VV10"] <- "ws"
+Weather_bcn$dt <- parse_date_time(Weather_bcn$dt, "dmy HM", truncated = 3)
+head(Weather_bcn)
 #I am going to assume these data covers main city area of Barcelona, and I am going to compare it with
 #data in Eixample.I am going to join the Eixample data with weather in Raval with dt field.
 
@@ -204,7 +208,7 @@ head(Eixample_NO2_weather_cor_NA)
 #The heatplot doesnt show what I wanted, so I will now try to plot the variables with more correlation,
 # the NO2 pollution with wind speed & direction as well as Atmospheric pressure.
 
-ggscatter(Eixample_NO2_weather_cor_NA, x = "value_intp", y = "P",
+ggscatter(Eixample_NO2_weather_cor_NA, x = "NO2", y = "P",
           add = "reg.line", conf.int = TRUE,
           cor.coef = TRUE, cor.method = "pearson", alpha = 0.1,
           xlab = "NO2 (µg/m3)", ylab = "Atmospheric pressure (mbar)", title = "NO2 and P relationship in Eixample")
@@ -212,18 +216,29 @@ ggscatter(Eixample_NO2_weather_cor_NA, x = "value_intp", y = "P",
 #In the plot we can see that the NO2 levels are slightly higher with higher P.
 
 #Let'a analyze the relationship between NO2 levels and Wind speed.
-ggscatter(Eixample_NO2_weather_cor_NA, x = "value_intp", y = "VV10",
+ggscatter(Eixample_NO2_weather_cor_NA, x = "NO2", y = "ws",
           add = "reg.line", conf.int = TRUE,
           cor.coef = TRUE, cor.method = "pearson", alpha = 0.1,
           xlab = "NO2 (µg/m3)", ylab = "Wind speed (km/h)", title = "NO2 and Wind speed relationship in Eixample")
 
 #This graph tells us that when the wind is intense, the pollution tends to be lower. The lower the wind
 #speed, the higher the pollution.
-
+head(Eixample_NO2_weather_cor_NA)
 #Let's analyze the effect of the wind direction to NO2 levels.
+ggscatter(Eixample_NO2_weather_cor_NA, x = "NO2", y = "wd",
+          add = "reg.line", conf.int = TRUE,
+          cor.coef = TRUE, cor.method = "pearson", alpha = 0.1,
+          xlab = "NO2 (µg/m3)", ylab = "Wind direction", title = "NO2 and Wind direction relationship in Eixample")
+#This graph doesnt tell us much so we are going to see other type to discover with what wind direction
+#we will have more NO2 pollution.
+windRose(Eixample_NO2_weather_cor_NA, ws = "ws", wd = "wd")
+percentileRose( mydata = Eixample_NO2_weather_cor_NA, wd = "wd", pollutant = "NO2", mean=TRUE, key.footer = "percentile")
 
+#According to this graph, we observe that when the wind is NW direction the pollution is best,
+#while when the wind is SE the pollution is highest.
 
 #12.What are the conditions with bad pollution in BCN? And conditions for good pollution?
+#Bad pollution is usually SE wind, and high atmospheric Pressure.
 
 #13.Are hospitalizations with respiratory issues affected by peaks of pollution?
 #14.Are hospitalizations with heart issues affected by peaks of pollution?
