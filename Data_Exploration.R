@@ -234,14 +234,38 @@ ggscatter(Eixample_NO2_weather_cor_NA, x = "NO2", y = "wd",
 windRose(Eixample_NO2_weather_cor_NA, ws = "ws", wd = "wd")
 percentileRose( mydata = Eixample_NO2_weather_cor_NA, wd = "wd", pollutant = "NO2", mean=TRUE, key.footer = "percentile")
 
-#According to this graph, we observe that when the wind is NW direction the pollution is best,
-#while when the wind is SE the pollution is highest.
+#According to this graph, we observe that when the wind is NW direction and higher speed,the pollution is best,
+#while when the wind is SE and low speed,the pollution is highest. I understand this looking at the
+#geography of the city, where south east is the ocean, and the pollution can scape when the wind
+#is NW, but when the wind is SE, the mountains hold the smog on the city.
 
-#12.What are the conditions with bad pollution in BCN? And conditions for good pollution?
-#Bad pollution is usually SE wind, and high atmospheric Pressure.
 
-#13.Are hospitalizations with respiratory issues affected by peaks of pollution?
-#14.Are hospitalizations with heart issues affected by peaks of pollution?
+#12.Are hospitalizations with respiratory issues affected by peaks of pollution?
+health <- read_csv('/Users/ione/Desktop/Project_AIR/data/Hospitalisations.csv',, locale = locale(encoding = "latin1"))
+summary(health)
+head(health)
+
+#First I am going to create a new date field with day-month-year format:
+health$date <- as.Date(with(health, paste(any, mes, dia,sep="-")), "%Y-%m-%d")
+health$date <- paste(health$any, health$mes, health$dia, sep="-") %>% ymd() %>% as.Date()
+head(health)
+#It doesn't work because month are strings in catalan and the system doesn't understand them.
+health %>% mutate_all(~case_when(. == "Gener" ~ "January",
+                      . == "Febrer" ~ "February",
+                      . == "Març" ~ "March",
+                      . == "Abril" ~ "April",
+                      . == "Maig" ~ "May",
+                      . == "Juny" ~ "June",
+                      . == "Juliol" ~ "July",
+                      . == "Agost" ~ "August",
+                      . == "Setembre" ~ "September",
+                      . == "Octubre" ~ "October",
+                      . == "Novembre" ~ "November",
+                      . == "Desembre " ~ "December",
+                      TRUE ~ .))
+
+
+#13.Are hospitalizations with heart issues affected by peaks of pollution?
 
 #15.How are public transport strikes affecting to pollution?
 #16.How are taxi strikes affecting to pollution?
