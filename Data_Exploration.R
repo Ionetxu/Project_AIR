@@ -245,24 +245,67 @@ health <- read_csv('/Users/ione/Desktop/Project_AIR/data/Hospitalisations.csv',,
 summary(health)
 head(health)
 
-#First I am going to create a new date field with day-month-year format:
-health$date <- as.Date(with(health, paste(any, mes, dia,sep="-")), "%Y-%m-%d")
-health$date <- paste(health$any, health$mes, health$dia, sep="-") %>% ymd() %>% as.Date()
+health <- health %>% rename(day="dia",
+                            month="mes",
+                            year = "any",
+                            diagnosis = "Diagnòstic Principal",
+                            hospitalizations= "Contactes d'hospitalització d'aguts (altes AH)")
+names(health)[names(health) == "dia"] <- "day"
+names(health)[names(health) == "mes"] <- "month"
+names(health)[names(health) == "any"] <- "year"
+names(health)[names(health) == "Diagnòstic Principal"] <- "Diagnosis"
+names(health)[names(health) == "Contactes d'hospitalització d'aguts (altes AH)"] <- "Hospitalizations"
+
 head(health)
+str(health)
+
+#First I am going to create a new date field with day-month-year format:
+
+health$dt <- paste(health$any, health$month, health$day, sep="-") %>% ymd() %>% as.Date()
+head(health)
+
+#I will check if there is any NA-s:
+sum(is.na(health))
+
 #It doesn't work because month are strings in catalan and the system doesn't understand them.
-health %>% mutate_all(~case_when(. == "Gener" ~ "January",
-                      . == "Febrer" ~ "February",
-                      . == "Març" ~ "March",
-                      . == "Abril" ~ "April",
-                      . == "Maig" ~ "May",
-                      . == "Juny" ~ "June",
-                      . == "Juliol" ~ "July",
-                      . == "Agost" ~ "August",
-                      . == "Setembre" ~ "September",
-                      . == "Octubre" ~ "October",
-                      . == "Novembre" ~ "November",
-                      . == "Desembre " ~ "December",
-                      TRUE ~ .))
+#I will translate them and try again:
+
+health$month[health$month == "Gener"] <- "January"
+health$month[health$month == "Febrer"] <- "February"
+health$month[health$month == "Març"] <- "March"
+health$month[health$month == "Abril"] <- "April"
+health$month[health$month == "Maig"] <- "May"
+health$month[health$month == "Juny"] <- "June"
+health$month[health$month == "Juliol"] <- "July"
+health$month[health$month == "Agost"] <- "August"
+health$month[health$month == "Setembre"] <- "September"
+health$month[health$month == "Octubre"] <- "October"
+health$month[health$month == "Novembre"] <- "November"
+health$month[health$month == "Desembre"] <- "December"
+View(health)
+
+health$dt <- paste(health$year, health$month, health$day, sep="-") %>% ymd() %>% as.Date()
+head(health)
+
+#I am going to compare these data with NO2 daily average values to see if there is any correlations.
+#First I will do the analysis for all the diseases, and then I will try to drill down to more specific
+#heart or respiratory issues.
+#Also, I will subset the health data to have only 2014 to 2018 data and convert the dt of NO2 to Date format.
+Eixample_NO2_day$dt <- as.Date(Eixample_NO2_day$dt)
+head(Eixample_NO2_day)
+
+health_2014 <- health %>% filter(year >=2014, year <= 2018)
+head(health_2014)
+tail(health_2014)
+
+#We only have health data from 2014 to 2018 so we will limit the pollution data accordingly.
+Eixample_NO2_day <- Eixample_NO2_day %>% filter ( dt <= "2017-12-31")
+tail(Eixample_NO2_day)
+
+#I am going to perform the join of health and NO2 data:
+
+Eixample_NO2_health <- merge(Eixample_NO2_day,health_2014,by="dt" )
+head(Eixample_NO2_health)
 
 
 #13.Are hospitalizations with heart issues affected by peaks of pollution?
