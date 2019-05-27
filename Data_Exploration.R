@@ -318,6 +318,15 @@ ggplot(df.out, aes(x =NO2 , y = Hospitalizations_resp)) +
   labs( x = "NO2(µg/m3)", y = "Hospitalizations", title = "NO2(µg/m3) - Respiratory issues in Eixample")
 
 #It looks like there is a positive correlation between NO2 levels and hospitalizations.
+
+#If we plot the values with the time:
+ggplot(df.out, aes(x =dt)) +
+      geom_line(aes(y = NO2, colour = "NO2")) +
+      coord_cartesian(xlim=c(as.Date("2014-01-01"),as.Date("2014-01-31"))) +
+      geom_line(aes(y = Hospitalizations_resp, colour = "Hospitalizations")) +
+      labs( x = "Time", y = "Hospitalizations", title = "NO2(µg/m3) - Respiratory issues in Eixample")
+
+
 #13.Are hospitalizations with heart issues affected by pollution?
 
 #15.How are public transport strikes affecting to pollution?
