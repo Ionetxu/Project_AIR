@@ -21,6 +21,8 @@ library(tidyquant)
 library(reshape)
 library(ggpubr)
 library(openair)
+library(data.table)
+require('data.table')
 
 # Data Exploration
 
@@ -241,62 +243,52 @@ percentileRose( mydata = Eixample_NO2_weather_cor_NA, wd = "wd", pollutant = "NO
 
 
 #12.Are hospitalizations with respiratory issues affected by peaks of pollution?
-health <- read_csv('/Users/ione/Desktop/Project_AIR/data/Hospitalisations.csv',, locale = locale(encoding = "latin1"))
-summary(health)
-head(health)
 
-health <- health %>% rename(day="dia",
-                            month="mes",
-                            year = "any",
-                            diagnosis = "Diagnòstic Principal",
-                            hospitalizations= "Contactes d'hospitalització d'aguts (altes AH)")
-names(health)[names(health) == "dia"] <- "day"
-names(health)[names(health) == "mes"] <- "month"
-names(health)[names(health) == "any"] <- "year"
-names(health)[names(health) == "Diagnòstic Principal"] <- "Diagnosis"
-names(health)[names(health) == "Contactes d'hospitalització d'aguts (altes AH)"] <- "Hospitalizations"
+health_resp <- read_csv('/Users/ione/Desktop/Project_AIR/data/Respiratory_2014-2017.csv',, locale = locale(encoding = "latin1"))
+summary(health_resp)
+head(health_resp)
 
-head(health)
-str(health)
+names(health_resp)[names(health_resp) == "dia"] <- "day"
+names(health_resp)[names(health_resp) == "mes"] <- "month"
+names(health_resp)[names(health_resp) == "any"] <- "year"
+names(health_resp)[names(health_resp) == "Diagnòstic Principal"] <- "Diagnosis"
+names(health_resp)[names(health_resp) == "Contactes d'hospitalització d'aguts (altes AH)"] <- "Hospitalizations"
 
-#First I am going to create a new date field with day-month-year format:
+head(health_resp)
+str(health_resp)
 
-health$dt <- paste(health$any, health$month, health$day, sep="-") %>% ymd() %>% as.Date()
-head(health)
 
-#I will check if there is any NA-s:
-sum(is.na(health))
+#Month names are strings in catalan and the system doesn't understand them when parsing into date format.
+#I will translate the month names and transform into date format:
 
-#It doesn't work because month are strings in catalan and the system doesn't understand them.
-#I will translate them and try again:
+health_resp$month[health_resp$month == "Gener"] <- "January"
+health_resp$month[health_resp$month == "Febrer"] <- "February"
+health_resp$month[health_resp$month == "Març"] <- "March"
+health_resp$month[health_resp$month == "Abril"] <- "April"
+health_resp$month[health_resp$month == "Maig"] <- "May"
+health_resp$month[health_resp$month == "Juny"] <- "June"
+health_resp$month[health_resp$month == "Juliol"] <- "July"
+health_resp$month[health_resp$month == "Agost"] <- "August"
+health_resp$month[health_resp$month == "Setembre"] <- "September"
+health_resp$month[health_resp$month == "Octubre"] <- "October"
+health_resp$month[health_resp$month == "Novembre"] <- "November"
+health_resp$month[health_resp$month == "Desembre"] <- "December"
+View(health_resp)
 
-health$month[health$month == "Gener"] <- "January"
-health$month[health$month == "Febrer"] <- "February"
-health$month[health$month == "Març"] <- "March"
-health$month[health$month == "Abril"] <- "April"
-health$month[health$month == "Maig"] <- "May"
-health$month[health$month == "Juny"] <- "June"
-health$month[health$month == "Juliol"] <- "July"
-health$month[health$month == "Agost"] <- "August"
-health$month[health$month == "Setembre"] <- "September"
-health$month[health$month == "Octubre"] <- "October"
-health$month[health$month == "Novembre"] <- "November"
-health$month[health$month == "Desembre"] <- "December"
-View(health)
-
-health$dt <- paste(health$year, health$month, health$day, sep="-") %>% ymd() %>% as.Date()
-head(health)
+health_resp$dt <- paste(health_resp$year, health_resp$month, health_resp$day, sep="-") %>% ymd() %>% as.Date()
+head(health_resp)
 
 #I am going to compare these data with NO2 daily average values to see if there is any correlations.
-#First I will do the analysis for all the diseases, and then I will try to drill down to more specific
-#heart or respiratory issues.
+#First I will do the analysis for respiratory issues and then same for heart issues.
 #Also, I will subset the health data to have only 2014 to 2018 data and convert the dt of NO2 to Date format.
+
 Eixample_NO2_day$dt <- as.Date(Eixample_NO2_day$dt)
 head(Eixample_NO2_day)
 
-health_2014 <- health %>% filter(year >=2014, year <= 2018)
-head(health_2014)
-tail(health_2014)
+health_resp_2014 <- health_resp %>% filter(year >=2014, year <= 2018)
+head(health_resp_2014)
+tail(health_resp_2014)
+str(health_resp_2014)
 
 #We only have health data from 2014 to 2018 so we will limit the pollution data accordingly.
 Eixample_NO2_day <- Eixample_NO2_day %>% filter ( dt <= "2017-12-31")
@@ -304,11 +296,28 @@ tail(Eixample_NO2_day)
 
 #I am going to perform the join of health and NO2 data:
 
-Eixample_NO2_health <- merge(Eixample_NO2_day,health_2014,by="dt" )
+Eixample_NO2_health <- merge(Eixample_NO2_day,health_resp_2014,by="dt" )
 head(Eixample_NO2_health)
 
+#We are now going to transform the data for the correlation plot.We need to aggregate the data
+#by dt so we have 1 value of pollution observation by 1 value of hospitalizations per day.
+#Because we need different aggregation types for each column, avg for NO2 and sum for hospitalizations:
 
-#13.Are hospitalizations with heart issues affected by peaks of pollution?
+df <- data.table(Eixample_NO2_health)
+df.out <- df[, list(NO2=mean(mean), Hospitalizations_resp=sum(Hospitalizations)),
+             by=dt]
+df.out
+
+View(Eixample_NO2_health)
+
+#It seems the data is correct, so we are going to plot them.
+
+ggplot(df.out, aes(x =NO2 , y = Hospitalizations_resp)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(color = "grey", alpha = 0.2) +
+  labs( x = "NO2(µg/m3)", y = "Hospitalizations", title = "NO2(µg/m3) - Respiratory issues in Eixample")
+
+#13.Are hospitalizations with heart issues affected by pollution?
 
 #15.How are public transport strikes affecting to pollution?
 #16.How are taxi strikes affecting to pollution?
