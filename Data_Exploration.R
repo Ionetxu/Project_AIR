@@ -314,9 +314,10 @@ View(Eixample_NO2_health)
 
 ggplot(df.out, aes(x =NO2 , y = Hospitalizations_resp)) +
   geom_point(alpha = 0.5) +
-  geom_smooth(color = "grey", alpha = 0.2) +
+  geom_smooth(method = "lm", color = "grey", alpha = 0.2) +
   labs( x = "NO2(µg/m3)", y = "Hospitalizations", title = "NO2(µg/m3) - Respiratory issues in Eixample")
 
+#It looks like there is a positive correlation between NO2 levels and hospitalizations.
 #13.Are hospitalizations with heart issues affected by pollution?
 
 #15.How are public transport strikes affecting to pollution?
