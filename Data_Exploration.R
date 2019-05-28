@@ -296,38 +296,166 @@ tail(Eixample_NO2_day)
 
 #I am going to perform the join of health and NO2 data:
 
-Eixample_NO2_health <- merge(Eixample_NO2_day,health_resp_2014,by="dt" )
-head(Eixample_NO2_health)
+Eixample_NO2_resp <- merge(Eixample_NO2_day,health_resp_2014,by="dt" )
+head(Eixample_NO2_resp)
 
 #We are now going to transform the data for the correlation plot.We need to aggregate the data
 #by dt so we have 1 value of pollution observation by 1 value of hospitalizations per day.
 #Because we need different aggregation types for each column, avg for NO2 and sum for hospitalizations:
 
-df <- data.table(Eixample_NO2_health)
+df <- data.table(Eixample_NO2_resp)
 df.out <- df[, list(NO2=mean(mean), Hospitalizations_resp=sum(Hospitalizations)),
              by=dt]
 df.out
 
-View(Eixample_NO2_health)
 
 #It seems the data is correct, so we are going to plot them.
+
+#I am going to do a normali
+# Shapiro-Wilk normality test for NO2
+shapiro.test(df.out$NO2) # => W = 0.97615, p-value = 7.869e-15
+
+# Shapiro-Wilk normality test for Hospitalizations
+shapiro.test(df.out$Hospitalizations_resp) # => W = 0.98142, p-value = 8.661e-13
+
+#Now I will perform a Pearson correlation test:
+
+res <- cor.test(df.out$NO2, df.out$Hospitalizations_resp,
+                method = "pearson")
+res
 
 ggplot(df.out, aes(x =NO2 , y = Hospitalizations_resp)) +
   geom_point(alpha = 0.5) +
   geom_smooth(method = "lm", color = "grey", alpha = 0.2) +
   labs( x = "NO2(µg/m3)", y = "Hospitalizations", title = "NO2(µg/m3) - Respiratory issues in Eixample")
 
+ggscatter(df.out, x = "NO2", y = "Hospitalizations_resp",
+          add = "reg.line",
+          conf.int = TRUE,
+          add.params = list(color = "blue",
+                            fill = "lightgray") ) +
+  stat_cor(method = "pearson", label.x = 3, label.y = 70)  # Add correlation coefficient
+
 #It looks like there is a positive correlation between NO2 levels and hospitalizations.
 
 #If we plot the values with the time:
 ggplot(df.out, aes(x =dt)) +
+  geom_line(aes(y = NO2, colour = "NO2")) +
+  coord_cartesian(xlim=c(as.Date("2014-01-01"),as.Date("2014-01-16"))) +
+  geom_line(aes(y = Hospitalizations_resp, colour = "Hospitalizations")) +
+  labs( x = "Time", y = "Hospitalizations", title = "NO2(µg/m3) - Respiratory issues in Eixample - week") +
+  scale_x_date(date_breaks = "1 day", date_labels = "%a")
+
+ggplot(df.out, aes(x =dt)) +
       geom_line(aes(y = NO2, colour = "NO2")) +
       coord_cartesian(xlim=c(as.Date("2014-01-01"),as.Date("2014-01-31"))) +
       geom_line(aes(y = Hospitalizations_resp, colour = "Hospitalizations")) +
-      labs( x = "Time", y = "Hospitalizations", title = "NO2(µg/m3) - Respiratory issues in Eixample")
+      labs( x = "Time", y = "Hospitalizations", title = "NO2(µg/m3) - Respiratory issues in Eixample - month") +
+      scale_x_date(date_breaks = "1 week", date_minor_breaks = "1 day", date_labels = "%b %d")
 
+ggplot(df.out, aes(x =dt)) +
+  geom_line(aes(y = NO2, colour = "NO2")) +
+  coord_cartesian(xlim=c(as.Date("2014-01-01"),as.Date("2014-12-31"))) +
+  geom_line(aes(y = Hospitalizations_resp, colour = "Hospitalizations")) +
+  labs( x = "Time", y = "Hospitalizations", title = "NO2(µg/m3) - Respiratory issues in Eixample - year") +
+  scale_x_date(date_breaks = "1 month", date_minor_breaks = "1 week", date_labels = "%b")
+
+
+#So we conclude that there is some positive correlation between respiratory issues and
+#NO2 values
 
 #13.Are hospitalizations with heart issues affected by pollution?
+#I am going to do the same analysis fpr heart issues:
+health_heart <- read_csv('/Users/ione/Desktop/Project_AIR/data/Heart_2014-2017.csv', locale = locale(encoding = "latin1"))
+summary(health_heart)
+head(health_heart)
+
+names(health_heart)[names(health_heart) == "dia"] <- "day"
+names(health_heart)[names(health_heart) == "mes"] <- "month"
+names(health_heart)[names(health_heart) == "any"] <- "year"
+names(health_heart)[names(health_heart) == "Diagnòstic Principal"] <- "Diagnosis"
+names(health_heart)[names(health_heart) == "Contactes d'hospitalització d'aguts (altes AH)"] <- "Hospitalizations"
+
+head(health_heart)
+str(health_heart)
+
+#We are now going to transform the data for the correlation plot.We need to aggregate the data
+#by dt so we have 1 value of pollution observation by 1 value of hospitalizations per day.
+#Because we need different aggregation types for each column, avg for NO2 and sum for hospitalizations:
+
+
+#Month names are strings in catalan and the system doesn't understand them when parsing into date format.
+#I will translate the month names and transform into date format:
+
+health_heart$month[health_heart$month == "Gener"] <- "January"
+health_heart$month[health_heart$month == "Febrer"] <- "February"
+health_heart$month[health_heart$month == "Març"] <- "March"
+health_heart$month[health_heart$month == "Abril"] <- "April"
+health_heart$month[health_heart$month == "Maig"] <- "May"
+health_heart$month[health_heart$month == "Juny"] <- "June"
+health_heart$month[health_heart$month == "Juliol"] <- "July"
+health_heart$month[health_heart$month == "Agost"] <- "August"
+health_heart$month[health_heart$month == "Setembre"] <- "September"
+health_heart$month[health_heart$month == "Octubre"] <- "October"
+health_heart$month[health_heart$month == "Novembre"] <- "November"
+health_heart$month[health_heart$month == "Desembre"] <- "December"
+View(health_heart)
+
+health_heart$dt <- paste(health_heart$year, health_heart$month, health_heart$day, sep="-") %>% ymd() %>% as.Date()
+head(health_heart)
+
+Eixample_NO2_heart <- merge(Eixample_NO2_day,health_heart,by="dt" )
+head(Eixample_NO2_heart)
+
+#We are now going to transform the data for the correlation plot.We need to aggregate the data
+#by dt so we have 1 value of pollution observation by 1 value of hospitalizations per day.
+#Because we need different aggregation types for each column, avg for NO2 and sum for hospitalizations:
+
+df2 <- data.table(Eixample_NO2_heart)
+df2.out <- df[, list(NO2=mean(mean), Hospitalizations_heart=sum(Hospitalizations)),
+             by=dt]
+df2.out
+
+
+#Now I will perform a Pearson correlation test between NO2 and hospitalizations because heart issues:
+
+res <- cor.test(df2.out$NO2, df2.out$Hospitalizations_heart,
+                method = "pearson")
+res
+
+ggplot(df2.out, aes(x =NO2 , y = Hospitalizations_heart)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "lm", color = "grey", alpha = 0.2) +
+  labs( x = "NO2(µg/m3)", y = "Hospitalizations", title = "NO2(µg/m3) - Cardiac issues in Eixample")
+
+ggscatter(df2.out, x = "NO2", y = "Hospitalizations_heart",
+          add = "reg.line",
+          conf.int = TRUE,
+          add.params = list(color = "blue",
+                            fill = "lightgray") ) +
+  stat_cor(method = "pearson", label.x = 3, label.y = 65)  # Add correlation coefficient
+
+#If we plot the values with the time:
+ggplot(df2.out, aes(x =dt)) +
+  geom_line(aes(y = NO2, colour = "NO2")) +
+  coord_cartesian(xlim=c(as.Date("2014-01-01"),as.Date("2014-01-16"))) +
+  geom_line(aes(y = Hospitalizations_heart, colour = "Hospitalizations")) +
+  labs( x = "Time", y = "Hospitalizations", title = "NO2(µg/m3) - Cardiac issues in Eixample - week") +
+  scale_x_date(date_breaks = "1 day", date_labels = "%a")
+
+ggplot(df2.out, aes(x =dt)) +
+  geom_line(aes(y = NO2, colour = "NO2")) +
+  coord_cartesian(xlim=c(as.Date("2014-01-01"),as.Date("2014-01-31"))) +
+  geom_line(aes(y = Hospitalizations_heart, colour = "Hospitalizations")) +
+  labs( x = "Time", y = "Hospitalizations", title = "NO2(µg/m3) - Cardiac issues in Eixample - month") +
+  scale_x_date(date_breaks = "1 week", date_minor_breaks = "1 day", date_labels = "%b %d")
+
+ggplot(df2.out, aes(x =dt)) +
+  geom_line(aes(y = NO2, colour = "NO2")) +
+  coord_cartesian(xlim=c(as.Date("2014-01-01"),as.Date("2014-12-31"))) +
+  geom_line(aes(y = Hospitalizations_heart, colour = "Hospitalizations")) +
+  labs( x = "Time", y = "Hospitalizations", title = "NO2(µg/m3) - Cardiac issues in Eixample - year") +
+  scale_x_date(date_breaks = "1 month", date_minor_breaks = "1 week", date_labels = "%b")
 
 #15.How are public transport strikes affecting to pollution?
 #16.How are taxi strikes affecting to pollution?
@@ -337,6 +465,6 @@ ggplot(df.out, aes(x =dt)) +
 
 #19.How is air traffic influencing pollution?
 
-#20.How is bicing influencing pollution?
+#20.How is port activity influencing pollution?
 
 
