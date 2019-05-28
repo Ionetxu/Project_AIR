@@ -457,6 +457,9 @@ ggplot(df2.out, aes(x =dt)) +
   labs( x = "Time", y = "Hospitalizations", title = "NO2(µg/m3) - Cardiac issues in Eixample - year") +
   scale_x_date(date_breaks = "1 month", date_minor_breaks = "1 week", date_labels = "%b")
 
+#Now we are going to do the same analysis for PM10 pollution:
+
+
 #15.How are public transport strikes affecting to pollution?
 #16.How are taxi strikes affecting to pollution?
 
