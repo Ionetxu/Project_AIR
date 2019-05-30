@@ -199,7 +199,7 @@ Eixample_NO2_day[order(Eixample_NO2_day$max, decreasing = TRUE),]
 Eixample_PM10_day[order(Eixample_PM10_day$max, decreasing = TRUE),]
 #I have analyzed what are the high concentrations for PM10, and these are the conclusions:
 #From top 10 values, 5 of them are from 24th June (Sant Joan). Including the highest observation with value 1167 on 2017-06-24.
-#Second highest PM10 value since 2014, happend on the 7th June 2015, when Barcelona won its
+#Second highest PM10 value since 2014, happened on the 7th June 2015, when Barcelona won its
 #5th Champions league against Juventus.
 #Third value and fourth value, 2015-10-03 and 2015-10-04, are part of a weekend, not sure why the high values.
 #Tenth value on the 2014-11-30, not sure why.
@@ -498,14 +498,13 @@ plot(cov_PM10_resp_classic)
 plot(cov_PM10_resp_rob)
 
 #Therefore the relationship between PM10 and hospitalizations for respiratory issues is not too correlated.
-
+#But this is not what other studies reflect, so there must be some fact that I am missing.
 
 #Regarding NO2 and hospitalizations caused for respiratory issues:
 ggscatter(df.NO2_resp, x = "NO2", y = "Hospitalizations_resp",
           add = "reg.line", conf.int = TRUE,
           cor.coef = TRUE, cor.method = "pearson", alpha = 0.1,
           xlab = "NO2 (µg/m3)", ylab = "Hospitalizations", title = "NO2 and hospitalizations respiratory issues in Eixample")
-
 
 #It looks like there is a positive correlation between NO2 levels and hospitalizations.
 #If we plot the values with the time:
@@ -577,15 +576,22 @@ head(health_heart)
 Eixample_NO2_heart <- merge(Eixample_NO2_day,health_heart,by="dt" )
 head(Eixample_NO2_heart)
 
-#We are now going to transform the data for the correlation plot.We need to aggregate the data
+Eixample_PM10_heart <- merge(Eixample_PM10_day,health_heart,by="dt" )
+head(Eixample_PM10_heart)
+
+#I am now going to transform the data for the correlation plot.I need to aggregate the data
 #by dt so we have 1 value of pollution observation by 1 value of hospitalizations per day.
-#Because we need different aggregation types for each column, avg for NO2 and sum for hospitalizations:
+#I need different aggregation types for each column, avg for NO2 and sum for hospitalizations:
 
-df2 <- data.table(Eixample_NO2_heart)
-df2.out <- df[, list(NO2=mean(mean), Hospitalizations_heart=sum(Hospitalizations)),
+df_NO2_1 <- data.table(Eixample_NO2_heart)
+df_NO2_heart <- df[, list(NO2=mean(mean), Hospitalizations_heart=sum(Hospitalizations)),
              by=dt]
-df2.out
+df_NO2_heart
 
+df_PM10_1 <- data.table(Eixample_NO2_heart)
+df_PM10_heart <- df[, list(PM10=mean(mean), Hospitalizations_heart=sum(Hospitalizations)),
+                   by=dt]
+df_PM10_heart
 
 #Now I will perform a Pearson correlation test between NO2 and hospitalizations because heart issues:
 
