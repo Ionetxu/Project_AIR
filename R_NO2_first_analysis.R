@@ -25,7 +25,7 @@ summary(airNO2)
 str(airNO2)
 
 # Giving new column names
-airNO2 <- airNO2 %>% rename(measurement_code='CODI MESURAMENT',
+airNO2 <- airNO2 %>% dplyr::rename(measurement_code='CODI MESURAMENT',
                                     pollutant='CONTAMINANT',
                                     station_code = 'CODI ESTACIÓ',
                                     station_name = 'NOM ESTACIÓ',
@@ -109,7 +109,7 @@ St_Gervasi_NO2_plt <- ggplot(St_gervasi_NO2, aes(x = as.Date(dt), y = value)) +
   geom_smooth(color = "grey", alpha = 0.2) +
   labs( x = "Time", y = "NO2 (µg/m3)", title = "NO2(µg/m3) - St Gervasi")
 
-#Only data from 1991 to 1997 - not interesting?
+#Only data from 1991 to 1997 so it's not too interesting.
 
 #Poblenou
 Poblenou_NO2_plt <- ggplot(Poblenou_NO2, aes(x = dt, y = value)) +
@@ -118,7 +118,7 @@ Poblenou_NO2_plt <- ggplot(Poblenou_NO2, aes(x = dt, y = value)) +
   scale_x_datetime(breaks='1 year',labels = date_format_tz( "%y")) +
   labs( x = "Time", y = "NO2 (µg/m3)", title = "NO2(µg/m3) - Poblenou")
 Poblenou_NO2_plt
-#Good data from 1991 to 2019, with breaks in between
+#Good data from 1991 to 2019, with big breaks in between in 2010 and 2013
 
 #Sagrera
 Sagrera_NO2_plt <- ggplot(Sagrera_NO2, aes(x = dt, y = value)) +
@@ -126,6 +126,7 @@ Sagrera_NO2_plt <- ggplot(Sagrera_NO2, aes(x = dt, y = value)) +
   geom_smooth(color = "grey", alpha = 0.2) +
   scale_x_datetime(breaks='1 year',labels = date_format_tz( "%y")) +
   labs( x = "Time", y = "NO2 (µg/m3)", title = "NO2 (µg/m3)- Sagrera")
+
 #Only data from 1993 to 2002
 
 #Sants
@@ -136,6 +137,7 @@ Sants_NO2_plt <- ggplot(Sants_NO2, aes(x = dt, y = value)) +
   labs( x = "Time", y = "NO2 (µg/m3)", title = "NO2(µg/m3) - Sants")
 Sants_NO2_plt
 #Data from 1995 to 2019
+
 #Eixample
 Eixample_NO2_plt <- ggplot(Eixample_NO2, aes(x = dt, y = value)) +
   geom_point(alpha = 0.5) +
@@ -146,7 +148,7 @@ Eixample_NO2_plt <- ggplot(Eixample_NO2, aes(x = dt, y = value)) +
   labs( x = "Year", y = "NO2 (µg/m3)", title = "NO2(µg/m3) - NO2 evolution in Eixample station")
 Eixample_NO2_plt
 
-#Data from 1995 to 2019
+#Data from 1995 to 2019, with lack of data in 2013
 #Gracia
 Gracia_NO2_plt <- ggplot(Gracia_NO2, aes(x = dt, y = value)) +
   geom_point(alpha = 0.5) +
@@ -419,11 +421,6 @@ write.csv(imp_2014_2018_NO2_Eixample_intp, "/Users/ione/Desktop/Project_AIR/Data
 write.csv(imp_2018_NO2_Eixample_intp, "/Users/ione/Desktop/Project_AIR/Data/Eixample_NO2_2018_ts.csv", row.names = F)
 write.csv(imp_2018_09_NO2_Eixample_intp, "/Users/ione/Desktop/Project_AIR/Data/Eixample_NO2_2018_09_ts.csv", row.names = F)
 
-#Analysis of the seasonality of NO2 evolution in Eixample:
-
-ggseasonplot(Eixample_NO2_2014_2018_year_ts, year.labels=TRUE, year.labels.left=TRUE) +
-  ylab("NO2") +
-  ggtitle("Seasonal plot: NO2 in Eixample")
 
 #I am going to use Gracia data for forecasting purposes:
 #Gracia:
