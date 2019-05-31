@@ -41,7 +41,7 @@ Eixample_NO2 <- read_csv('/Users/ione/Desktop/Project_AIR/data/Eixample_NO2_2014
 head(Eixample_NO2)
 summary(Eixample_NO2)
 
-names(Eixample_NO2)[names(Eixample_NO2) == "imp_2014_2018_NO2_Eixample_intp"] <- "NO2"
+Eixample_NO2 <- Eixample_NO2 %>% dplyr::rename(NO2='imp_2014_2018_NO2_Eixample_intp')
 summary(Eixample_NO2)
 
 #I am going to upload PM10 data:
@@ -131,7 +131,7 @@ ggplot( data =Eixample_NO2_month , aes(x = as.Date(dt), y = mean)) +
 
 ggplot(data =Eixample_PM10_month ,aes(x = as.Date(dt), y = mean)) +
   geom_line(alpha = 0.5) +
-  labs( x = "Time", y = "PM10 (µg/m3)", title = "NO2(µg/m3) - Eixample PM10 monthly avg")+
+  labs( x = "Time", y = "PM10 (µg/m3)", title = "Eixample PM10 monthly avg")+
   geom_smooth(color = "grey", alpha = 0.2) +
   scale_x_date(breaks='6 months', date_labels = "%m-%Y")
 
@@ -194,10 +194,33 @@ Eixample_PM10_day_2018 %>% summarize(n_cases = sum(Eixample_PM10_day_2018$mean >
 #7.What is the max day of the week with higher avg NO2, PM10 pollution normally? And the minimum?
 Eixample_NO2_day[order(Eixample_NO2_day$max, decreasing = TRUE),]
 #Analyze the days
-
+#dt           min   max  mean median
+#<date>     <dbl> <dbl> <dbl>  <dbl>
+#  1 2016-12-13    67   200  130.  126
+#2 2016-12-12    87   193  119.  106
+#3 2016-12-27    88   189  119.  109.
+#4 2017-06-15    55   187  123.  128.
+#5 2015-01-02    47   178  103.   98.7
+#6 2017-11-17    69   176  119.  114
+#7 2017-11-21    89   176  129.  132.
+#8 2015-02-12    57   171  113.  112.
+#9 2017-11-24    80   171  116.  113.
+#10 2015-06-04    62   166  103.   91.7
 
 Eixample_PM10_day[order(Eixample_PM10_day$max, decreasing = TRUE),]
-#I have analyzed what are the high concentrations for PM10, and these are the conclusions:
+#dt           min   max  mean median
+#<date>     <dbl> <dbl> <dbl>  <dbl>
+#1 2017-06-24    20  1167 303.    54
+#2 2015-06-07    21   536  66.7   27
+#3 2015-10-03     1   509  60.5   28.2
+#4 2014-06-24     9   471 144.    56
+#5 2016-06-24    15   458 125.    43
+#6 2015-10-04    14   405 109.    28
+#7 2015-06-24    19   314  91.3   37
+#8 2014-11-30     8   269  99.4   86.4
+#9 2016-02-22    16   259  84.8   75.2
+#10 2015-06-23    21   248  49.5   31.8
+
 #From top 10 values, 5 of them are from 24th June (Sant Joan). Including the highest observation with value 1167 on 2017-06-24.
 #Second highest PM10 value since 2014, happened on the 7th June 2015, when Barcelona won its
 #5th Champions league against Juventus.
@@ -224,9 +247,10 @@ tail(Weather_bcn)
 #Data column is in format "1/1/2014 1:00", and it's a character, so I'll change it to be same as
 #the pollution format.
 
-names(Weather_bcn)[names(Weather_bcn) == "DATA (T.U.)"] <- "dt"
-names(Weather_bcn)[names(Weather_bcn) == "DV10"] <- "wd"
-names(Weather_bcn)[names(Weather_bcn) == "VV10"] <- "ws"
+Weather_bcn <- Weather_bcn %>% dplyr::rename(dt="DATA (T.U.)",
+                                             wd = "DV10",
+                                             ws = "VV10")
+
 Weather_bcn$dt <- parse_date_time(Weather_bcn$dt, "dmy HM", truncated = 3)
 head(Weather_bcn)
 #I am going to assume these data covers main city area of Barcelona, and I am going to compare it with
@@ -387,11 +411,11 @@ health_resp <- read_csv('/Users/ione/Desktop/Project_AIR/data/Respiratory_2014-2
 summary(health_resp)
 head(health_resp)
 
-names(health_resp)[names(health_resp) == "dia"] <- "day"
-names(health_resp)[names(health_resp) == "mes"] <- "month"
-names(health_resp)[names(health_resp) == "any"] <- "year"
-names(health_resp)[names(health_resp) == "Diagnòstic Principal"] <- "Diagnosis"
-names(health_resp)[names(health_resp) == "Contactes d'hospitalització d'aguts (altes AH)"] <- "Hospitalizations"
+health_resp <- health_resp %>% dplyr::rename(day="dia",
+                                             month= "mes",
+                                             year= "any",
+                                             Diagnosis = "Diagnòstic Principal",
+                                             Hospitalizations = "Contactes d'hospitalització d'aguts (altes AH)")
 
 head(health_resp)
 str(health_resp)
@@ -412,7 +436,7 @@ health_resp$month[health_resp$month == "Setembre"] <- "September"
 health_resp$month[health_resp$month == "Octubre"] <- "October"
 health_resp$month[health_resp$month == "Novembre"] <- "November"
 health_resp$month[health_resp$month == "Desembre"] <- "December"
-View(health_resp)
+head(health_resp)
 
 health_resp$dt <- paste(health_resp$year, health_resp$month, health_resp$day, sep="-") %>% ymd() %>% as.Date()
 head(health_resp)
@@ -484,20 +508,19 @@ res2 <- cor.test(df_PM10_resp$PM10, df_PM10_resp$Hospitalizations_resp,
 res2
 
 #Correlation coeficcient is 0.025, which is extremely low. My hypothesis is that the
-#outliers are corrupting the result.I am going to leave the outliers out for the correlation analysis.
+#outliers are corrupting the result.
 
 #I will try to calculate a robust covariance matrix between PM10 and respiration issues, and
 #compare it with a classic covariance matrix:
 
-
 cov_PM10_resp_classic <- covClassic(cbind(df_PM10_resp$PM10,df_PM10_resp$Hospitalizations_resp), corr = TRUE)
-cov_PM10_resp_classic #Estimate of correlation of 0.02524
+cov_PM10_resp_classic #Estimate of correlation is 0.02524
 cov_PM10_resp_rob <- covRob(cbind(df_PM10_resp$PM10,df_PM10_resp$Hospitalizations_resp), corr = TRUE)
-cov_PM10_resp_rob #Estimate of correlation of 0.09628
+cov_PM10_resp_rob #Estimate of robust correlation is 0.09628
 plot(cov_PM10_resp_classic)
 plot(cov_PM10_resp_rob)
 
-#Therefore the relationship between PM10 and hospitalizations for respiratory issues is not too correlated.
+#Therefore the relationship between PM10 and hospitalizations for respiratory issues is weakly correlated.
 #But this is not what other studies reflect, so there must be some fact that I am missing.
 
 #Regarding NO2 and hospitalizations caused for respiratory issues:
@@ -506,7 +529,7 @@ ggscatter(df.NO2_resp, x = "NO2", y = "Hospitalizations_resp",
           cor.coef = TRUE, cor.method = "pearson", alpha = 0.1,
           xlab = "NO2 (µg/m3)", ylab = "Hospitalizations", title = "NO2 and hospitalizations respiratory issues in Eixample")
 
-#It looks like there is a positive correlation between NO2 levels and hospitalizations.
+#It looks like there is a moderate positive correlation between NO2 levels and hospitalizations.
 #If we plot the values with the time:
 ggplot(df.NO2_resp, aes(x =dt)) +
   geom_line(aes(y = NO2, colour = "NO2")) +
@@ -530,20 +553,18 @@ ggplot(df.NO2_resp, aes(x =dt)) +
   scale_x_date(date_breaks = "1 month", date_minor_breaks = "1 week", date_labels = "%b")
 
 
-#So we conclude that there is some positive correlation between respiratory issues and
-#NO2
-
 #13.Are hospitalizations with heart issues affected by pollution?
 #I am going to do the same analysis fpr heart issues:
 health_heart <- read_csv('/Users/ione/Desktop/Project_AIR/data/Heart_2014-2017.csv', locale = locale(encoding = "latin1"))
 summary(health_heart)
 head(health_heart)
 
-names(health_heart)[names(health_heart) == "dia"] <- "day"
-names(health_heart)[names(health_heart) == "mes"] <- "month"
-names(health_heart)[names(health_heart) == "any"] <- "year"
-names(health_heart)[names(health_heart) == "Diagnòstic Principal"] <- "Diagnosis"
-names(health_heart)[names(health_heart) == "Contactes d'hospitalització d'aguts (altes AH)"] <- "Hospitalizations"
+
+health_heart <- health_heart %>% dplyr::rename(day="dia",
+                                             month= "mes",
+                                             year= "any",
+                                             Diagnosis = "Diagnòstic Principal",
+                                             Hospitalizations = "Contactes d'hospitalització d'aguts (altes AH)")
 
 head(health_heart)
 str(health_heart)
@@ -584,58 +605,114 @@ head(Eixample_PM10_heart)
 #I need different aggregation types for each column, avg for NO2 and sum for hospitalizations:
 
 df_NO2_1 <- data.table(Eixample_NO2_heart)
-df_NO2_heart <- df[, list(NO2=mean(mean), Hospitalizations_heart=sum(Hospitalizations)),
+df_NO2_heart <- df_NO2_1[, list(NO2=mean(mean), Hospitalizations_heart=sum(Hospitalizations)),
              by=dt]
 df_NO2_heart
 
-df_PM10_1 <- data.table(Eixample_NO2_heart)
-df_PM10_heart <- df[, list(PM10=mean(mean), Hospitalizations_heart=sum(Hospitalizations)),
+df_PM10_1 <- data.table(Eixample_PM10_heart)
+df_PM10_heart <- df_PM10_1[, list(PM10=mean(mean), Hospitalizations_heart=sum(Hospitalizations)),
                    by=dt]
 df_PM10_heart
 
-#Now I will perform a Pearson correlation test between NO2 and hospitalizations because heart issues:
+#Now I will perform a Pearson correlation test between NO2, PM10 and hospitalizations because heart issues:
 
-res <- cor.test(df2.out$NO2, df2.out$Hospitalizations_heart,
+cor_NO2_heart <- cor.test(df_NO2_heart$NO2, df_NO2_heart$Hospitalizations_heart,
                 method = "pearson")
-res
+cor_NO2_heart
+# The cor coef is 0.50
+cor_PM10_heart <- cor.test(df_PM10_heart$PM10, df_PM10_heart$Hospitalizations_heart,
+                          method = "pearson")
+cor_PM10_heart
+# The cor coef is 0.125
 
-ggplot(df2.out, aes(x =NO2 , y = Hospitalizations_heart)) +
-  geom_point(alpha = 0.5) +
-  geom_smooth(method = "lm", color = "grey", alpha = 0.2) +
-  labs( x = "NO2(µg/m3)", y = "Hospitalizations", title = "NO2(µg/m3) - Cardiac issues in Eixample")
-
-ggscatter(df2.out, x = "NO2", y = "Hospitalizations_heart",
+ggscatter(df_NO2_heart, x = "NO2", y = "Hospitalizations_heart",
           add = "reg.line",
           conf.int = TRUE,
           add.params = list(color = "blue",
                             fill = "lightgray") ) +
   stat_cor(method = "pearson", label.x = 3, label.y = 65)  # Add correlation coefficient
 
+ggscatter(df_PM10_heart, x = "PM10", y = "Hospitalizations_heart",
+          add = "reg.line",
+          conf.int = TRUE,
+          add.params = list(color = "blue",
+                            fill = "lightgray") ) +
+  stat_cor(method = "pearson", label.x = 3, label.y = 65)  # Add correlation coefficient
+
+#I will try to do the correlation analysis for PM10 with a robust analytical covariance method
+#so that the effect of the outliers is reduced.
+
+cov_PM10_heart_classic <- covClassic(cbind(df_PM10_heart$PM10,df_PM10_heart$Hospitalizations_heart), corr = TRUE)
+cov_PM10_heart_classic #Estimate of correlation of 0.1253
+cov_PM10_heart_rob <- covRob(cbind(df_PM10_heart$PM10,df_PM10_heart$Hospitalizations_heart), corr = TRUE)
+cov_PM10_heart_rob #Estimate of correlation of 0.2404
+plot(cov_PM10_heart_classic)
+plot(cov_PM10_heart_rob)
+
+#Check Mahalanobis distance.
+
 #If we plot the values with the time:
-ggplot(df2.out, aes(x =dt)) +
+ggplot(df_NO2_heart, aes(x =dt)) +
   geom_line(aes(y = NO2, colour = "NO2")) +
   coord_cartesian(xlim=c(as.Date("2014-01-01"),as.Date("2014-01-16"))) +
   geom_line(aes(y = Hospitalizations_heart, colour = "Hospitalizations")) +
   labs( x = "Time", y = "Hospitalizations", title = "NO2(µg/m3) - Cardiac issues in Eixample - week") +
   scale_x_date(date_breaks = "1 day", date_labels = "%a")
 
-ggplot(df2.out, aes(x =dt)) +
+ggplot(df_NO2_heart, aes(x =dt)) +
   geom_line(aes(y = NO2, colour = "NO2")) +
   coord_cartesian(xlim=c(as.Date("2014-01-01"),as.Date("2014-01-31"))) +
   geom_line(aes(y = Hospitalizations_heart, colour = "Hospitalizations")) +
   labs( x = "Time", y = "Hospitalizations", title = "NO2(µg/m3) - Cardiac issues in Eixample - month") +
   scale_x_date(date_breaks = "1 week", date_minor_breaks = "1 day", date_labels = "%b %d")
 
-ggplot(df2.out, aes(x =dt)) +
+ggplot(df_NO2_heart, aes(x =dt)) +
   geom_line(aes(y = NO2, colour = "NO2")) +
   coord_cartesian(xlim=c(as.Date("2014-01-01"),as.Date("2014-12-31"))) +
   geom_line(aes(y = Hospitalizations_heart, colour = "Hospitalizations")) +
-  labs( x = "Time", y = "Hospitalizations", title = "NO2(µg/m3) - Cardiac issues in Eixample - year") +
+  labs( x = "Time", y = "Hospitalizations", title = "NO2(µg/m3) - heart hospitalizations in Eixample - 2014") +
   scale_x_date(date_breaks = "1 month", date_minor_breaks = "1 week", date_labels = "%b")
 
 
 
 #14.Is MWC affecting to pollution?
+#MWC has been celebrating in BCN since 2006, and it has significant impact in the mobility of the city.
+#If we observe the pollution of the event historically:
+Eixample_NO2<-read_csv('/Users/ione/Desktop/Project_AIR/data/Eixample_NO2.csv')
+summary(Eixample_NO2)
+
+#I want data also from 2019, so I will subset the data in order to inpute NA values and be able to
+#calculate the mean, median, max and min.
+Eixample_NO2_2014_2019 <- Eixample_NO2 %>% filter(year >=2014)
+Eixample_NO2_2014_2019_ts <- ts(Eixample_NO2_2014_2019[,10], start = c(2014, 1), frequency = 24)
+
+plotNA.distributionBar(Eixample_NO2_2014_2019_ts, breaks = 12)
+Eixample_NO2_2014_2019_intp <- na.interpolation(Eixample_NO2_2014_2019_ts)
+Eixample_NO2_2014_2019_complete <- Eixample_NO2_2014_2019 %>% mutate(Eixample_NO2_2014_2019_intp)
+
+plotNA.imputations(x.withNA = Eixample_NO2_2014_2019_ts, x.withImputations = Eixample_NO2_2014_2019_intp)
+
+summary(Eixample_NO2_2014_2019_complete)
+
+
+Eixample_NO2_2014_2019_complete <- Eixample_NO2_2014_2019_complete %>% dplyr::rename(NO2="Eixample_NO2_2014_2019_intp")
+summary(Eixample_NO2_2014_2019_complete)
+
+Eixample_NO2_week <- Eixample_NO2_2014_2019_complete %>%
+  tq_transmute(select     = NO2,
+               mutate_fun = apply.weekly,
+               FUN        = stat_fun)
+summary(Eixample_NO2_week)
+head(Eixample_NO2_week)
+
+
+ggplot(Eixample_NO2_week, aes(x =as.Date(dt), y=median)) +
+  coord_cartesian(xlim=c(as.Date("2014-01-01"),as.Date("2014-03-31"))) +
+  labs( x = "Time", y = "NO2", title = "NO2(µg/m3) weekly in Eixample - 2014") +
+  scale_x_date(date_breaks = "1 month", date_minor_breaks = "1 week", date_labels = "%b")
+
+write.csv(Eixample_NO2_week, "/Users/ione/Desktop/Project_AIR/Data/Eixample_NO2_week.csv", row.names = F)
+
 #15.How are public transport strikes affecting to pollution?
 #16.How are taxi strikes affecting to pollution?
 
