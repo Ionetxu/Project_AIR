@@ -135,8 +135,8 @@ ggplot(data =Eixample_PM10_month ,aes(x = as.Date(dt), y = mean)) +
   geom_smooth(color = "grey", alpha = 0.2) +
   scale_x_date(breaks='6 months', date_labels = "%m-%Y")
 
-#For NO2 I don't see a clear seasonality but the trend seems slightly positive.
-#Therefore the pollutant NO2 levels have not improved significantly since 2014.
+#For NO2 I see multiple seasonality (day, week, year) and the trend seems slightly positive.
+#NO2 levels have not improved significantly since 2014.
 
 #For PM10 the seasonality is even more difficult to see, and there is not visible trend.
 
