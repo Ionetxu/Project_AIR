@@ -14,6 +14,7 @@ library(fpp2)
 library(RcppRoll)
 library(kableExtra)
 library(imputeTS)
+options(knitr.table.format = "html")
 
 airPM10 <- read_csv('/Users/ione/Desktop/Project_AIR/data/airpm10.csv')
 View(airPM10)
@@ -62,8 +63,7 @@ airPM10$dt <- with(airPM10, ymd(airPM10$dt) + hms(time))
 #Convert into POSIXct because Dplyr doesnt support POSIXlt
 airPM10$dt <- as.POSIXct(airPM10$dt)
 head(print(airNO2$dt))
-#We drop columns that we don't need - measurement-code and station name & sort columns
-#I take out time because 24h is not able to interpret correctly
+#We drop columns that we don't need:
 airPM10 <- dplyr::select(airPM10, -c("station_name", "time"))
 summary(airPM10)
 
@@ -121,7 +121,6 @@ Gracia_PM10_plt
 #We have data from 2004 to 2007, and 2018 to 2010, and 2016 to 2019
 
 # There is no data for Ciutatella
-
 
 #Torre_girona
 Torre_girona_PM10_plt <- ggplot(Torre_girona_PM10, aes(x = dt, y = value)) +
