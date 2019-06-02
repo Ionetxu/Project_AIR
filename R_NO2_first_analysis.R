@@ -83,9 +83,9 @@ airNO2$dt <- as.POSIXct(airNO2$dt)
 head(print(airNO2$dt))
 #We drop columns that we don't need - measurement-code and station name & sort columns
 #I take out time because 24h is not able to interpret correctly
-airNO2_1 <- dplyr::select(airNO2, -c("measurement_code", "station_name", "time"))
+airNO2_1 <- dplyr::select(airNO2, -c( "station_name", "time"))
 summary(airNO2_1)
-
+head(airNO2$measurement_code)
 #Let's analyze the data by plotting them by station
 
 St_gervasi_NO2 <- airNO2_1 %>% filter(station_code == 3)
@@ -107,36 +107,45 @@ str(Eixample_NO2)
 St_Gervasi_NO2_plt <- ggplot(St_gervasi_NO2, aes(x = as.Date(dt), y = value)) +
   geom_point(alpha = 0.5) +
   geom_smooth(color = "grey", alpha = 0.2) +
+  geom_hline(yintercept = 200, linetype="dashed", colour = "red")+
+  geom_hline(yintercept = 40, linetype="dashed", colour = "red")+
   labs( x = "Time", y = "NO2 (µg/m3)", title = "NO2(µg/m3) - St Gervasi")
-
+St_Gervasi_NO2_plt
 #Only data from 1991 to 1997 so it's not too interesting.
 
 #Poblenou
-Poblenou_NO2_plt <- ggplot(Poblenou_NO2, aes(x = dt, y = value)) +
+
+Poblenou_NO2_plt <- ggplot(Poblenou_NO2, aes(x = as.Date(dt), y = value)) +
   geom_point(alpha = 0.5) +
   geom_smooth(color = "grey", alpha = 0.2) +
-  scale_x_datetime(breaks='1 year',labels = date_format_tz( "%y")) +
-  labs( x = "Time", y = "NO2 (µg/m3)", title = "NO2(µg/m3) - Poblenou")
+  geom_hline(yintercept = 200, linetype="dashed", colour = "red")+
+  geom_hline(yintercept = 40, linetype="dashed", colour = "red")+
+  scale_x_date(breaks='2 years', date_labels = "%Y") +
+  labs( x = "Time", y = "NO2 (µg/m3)", title = "NO2(µg/m3) evolution - Poblenou")
 Poblenou_NO2_plt
-#Good data from 1991 to 2019, with big breaks in between in 2010 and 2013
+#Good data from 1991 to 2019, with no data in 2010 and 2013
 
 #Sagrera
 Sagrera_NO2_plt <- ggplot(Sagrera_NO2, aes(x = dt, y = value)) +
   geom_point(alpha = 0.5) +
   geom_smooth(color = "grey", alpha = 0.2) +
-  scale_x_datetime(breaks='1 year',labels = date_format_tz( "%y")) +
+  geom_hline(yintercept = 200, linetype="dashed", colour = "red")+
+  geom_hline(yintercept = 40, linetype="dashed", colour = "red")+
+  scale_x_datetime(breaks='2 years',date_labels = "%Y") +
   labs( x = "Time", y = "NO2 (µg/m3)", title = "NO2 (µg/m3)- Sagrera")
-
+Sagrera_NO2_plt
 #Only data from 1993 to 2002
 
 #Sants
 Sants_NO2_plt <- ggplot(Sants_NO2, aes(x = dt, y = value)) +
   geom_point(alpha = 0.5) +
   geom_smooth(color = "grey", alpha = 0.2) +
-  scale_x_datetime(breaks='1 year',labels = date_format_tz( "%y")) +
+  geom_hline(yintercept = 200, linetype="dashed", colour = "red")+
+  geom_hline(yintercept = 40, linetype="dashed", colour = "red")+
+  scale_x_datetime(breaks='2 years',date_labels = "%Y") +
   labs( x = "Time", y = "NO2 (µg/m3)", title = "NO2(µg/m3) - Sants")
 Sants_NO2_plt
-#Data from 1995 to 2019
+#Data from 1995 to 2019, no data in 2013
 
 #Eixample
 Eixample_NO2_plt <- ggplot(Eixample_NO2, aes(x = dt, y = value)) +
@@ -144,58 +153,75 @@ Eixample_NO2_plt <- ggplot(Eixample_NO2, aes(x = dt, y = value)) +
   geom_hline(yintercept = 200, linetype="dashed", colour = "red")+
   geom_hline(yintercept = 40, linetype="dashed", colour = "red")+
   geom_smooth(color = "grey", alpha = 0.2) +
-  scale_x_datetime(breaks='1 year',labels = date_format_tz( "%y")) +
+  scale_x_datetime(breaks='2 years',date_labels = "%Y") +
   labs( x = "Year", y = "NO2 (µg/m3)", title = "NO2(µg/m3) - NO2 evolution in Eixample station")
 Eixample_NO2_plt
 
-#Data from 1995 to 2019, with lack of data in 2013
+#Data from 1995 to 2019, no data in 2013
 #Gracia
 Gracia_NO2_plt <- ggplot(Gracia_NO2, aes(x = dt, y = value)) +
   geom_point(alpha = 0.5) +
   geom_smooth(color = "grey", alpha = 0.2) +
-  scale_x_datetime(breaks='1 year',labels = date_format_tz( "%y")) +
+  geom_hline(yintercept = 200, linetype="dashed", colour = "red")+
+  geom_hline(yintercept = 40, linetype="dashed", colour = "red")+
+  scale_x_datetime(breaks='2 years',date_labels = "%Y") +
   labs( x = "Time", y = "NO2 (µg/m3)", title = "NO2(µg/m3) - Gracia")
 Gracia_NO2_plt
-#Good data from 1995 to 2019
+#Good data from 1995 to 2019, no data in 2013
 #Ciutatella
 Ciutatella_NO2_plt <- ggplot(Ciutatella_NO2, aes(x = dt, y = value)) +
   geom_point(alpha = 0.5) +
   geom_smooth(color = "grey", alpha = 0.2) +
-  scale_x_datetime(breaks='1 year',labels = date_format_tz( "%y")) +
+  geom_hline(yintercept = 200, linetype="dashed", colour = "red")+
+  geom_hline(yintercept = 40, linetype="dashed", colour = "red")+
+  scale_x_datetime(breaks='2 years',date_labels = "%Y") +
   labs( x = "Time", y = "NO2 (µg/m3)", title = "NO2(µg/m3) - Ciutatella")
-#Data from 2004 to 2019
+Ciutatella_NO2_plt
+#Data from 2004 to 2019, no data in 2013
 
 #Torre_girona
 Torre_girona_NO2_plt <- ggplot(Torre_girona_NO2, aes(x = dt, y = value)) +
   geom_point(alpha = 0.5) +
   geom_smooth(color = "grey", alpha = 0.2) +
-  scale_x_datetime(breaks='1 year',labels = date_format_tz( "%y")) +
+  geom_hline(yintercept = 200, linetype="dashed", colour = "red")+
+  geom_hline(yintercept = 40, linetype="dashed", colour = "red")+
+  scale_x_datetime(breaks='2 years',date_labels = "%Y") +
   labs( x = "Time", y = "NO2 (µg/m3)", title = "NO2(µg/m3) - Torre Girona")
-#Data from 2006 to 2019
+Torre_girona_NO2_plt
+#Data from 2006 to 2019, no data in 2013
 #Vall_hebron
 Vall_hebron_NO2_plt <- ggplot(Vall_hebron_NO2, aes(x = dt, y = value)) +
   geom_point(alpha = 0.5) +
   geom_smooth(color = "grey", alpha = 0.2) +
-  scale_x_datetime(breaks='1 year',labels = date_format_tz( "%y")) +
+  geom_hline(yintercept = 200, linetype="dashed", colour = "red")+
+  geom_hline(yintercept = 40, linetype="dashed", colour = "red")+
+  scale_x_datetime(breaks='2 year',date_labels = "%Y") +
   labs( x = "Time", y = "NO2 (µg/m3)", title = "NO2(µg/m3) - Vall Hebron")
-#Data only for 2010-2011??
+Vall_hebron_NO2_plt
+#Data only for 2010-2011
 
 #Palau_reial
 Palau_reial_NO2_plt <- ggplot(Palau_reial_NO2, aes(x = dt, y = value)) +
   geom_point(alpha = 0.5) +
   geom_smooth(color = "grey", alpha = 0.2) +
-  scale_x_datetime(breaks='1 year',labels = date_format_tz( "%y")) +
+  geom_hline(yintercept = 200, linetype="dashed", colour = "red")+
+  geom_hline(yintercept = 40, linetype="dashed", colour = "red")+
+  scale_x_datetime(breaks='2 years',date_labels = "%Y") +
   labs( x = "Time", y = "NO2 (µg/m3)", title = "NO2(µg/m3) - Palau Reial")
-#Data from 2011 to 2019
+Palau_reial_NO2_plt
+#Data from 2011 to 2019, no data for 2013
 #Observ_fabra
 Observ_fabra_NO2_plt <- ggplot(Observ_fabra_NO2, aes(x = dt, y = value)) +
   geom_point(alpha = 0.5) +
   geom_smooth(color = "grey", alpha = 0.2) +
-  scale_x_datetime(breaks='1 year',labels = date_format_tz( "%y")) +
+  geom_hline(yintercept = 200, linetype="dashed", colour = "red")+
+  geom_hline(yintercept = 40, linetype="dashed", colour = "red")+
+  scale_x_datetime(breaks='2 years',date_labels = "%Y") +
   labs( x = "Time", y = "NO2 (µg/m3)", title = "NO2(µg/m3) - Observatori Fabra")
+Observ_fabra_NO2_plt
 #Data from 2018 to 2019
 
-#I'm going to discard Sagrera and St Gervasi from the study
+#I'm going to discard Sagrera, St Gervasi and Vall Hebron station data from the study
 
 #Going to analyse the missing values by station
 
@@ -259,8 +285,10 @@ Ciutatella_NO2_subset_plt <- ggplot(Ciutatella_NO2, aes(x = as.POSIXct(dt), y = 
   scale_x_datetime(limits=start.end,breaks='12 hours',labels = date_format_tz( "%d\n%H:%M", tz="UTC"))
 
 Ciutatella_NO2_subset_plt
-#There are no measurements taken between 1am and 10am systematically in any station, avoiding rush hour in the morning.
-# It seems there is a peak every morning around 9-10am
+
+#I observe that there are no measurements taken between 1am and 10am systematically in any station,
+#avoiding rush hour in the morning. This is bad news as we are not measuring the morning peak
+#due to morning rush hour
 
 
 
@@ -338,20 +366,6 @@ imp_2014_NO2_Poblenou_intp <- na.interpolation(Poblenou_NO2_2014_ts)
 plotNA.imputations(x.withNA = Poblenou_NO2_2014_ts_1, x.withImputations = imp_2014_1_NO2_Poblenou_intp)
 plotNA.imputations(x.withNA = Poblenou_NO2_2014_ts, x.withImputations = imp_2014_NO2_Poblenou_intp)
 
-#Autocorrelation of time-series plot:
-ggAcf(imp_2014_NO2_Poblenou_intp)
-#The maximum autocorrelation occurs at lag=1. We are going to apply a Ljung-Box test to discard is
-#white noise time series
-Box.test(imp_2014_NO2_Poblenou_intp, lag=1, type = "Ljung")
-
-#Because p-value < 2,2 e-16, we see there is some seasonality and it's not a completely random series
-
-#Now I am going to prepare CSV files for time-series forecasting. Things to do:
-#*Imputing NA values bt interpolation for 4 years (2014,2015,2016,2017, and maybe 2018)
-#*Doing it for all stations except for St_Gervasi and Sagrera:
-#St_gervasi_NO2, Poblenou_NO2, Sagrera_NO2, Sants_NO2, Eixample_NO2, Gracia_NO2, Ciutatella_NO2, Torre_girona_NO2
-#Palau_reial_NO2
-#Doing it also for PM10
 
 #Imputation of NA values for Poblenou - NO2 values from 2014 to 2018
 
