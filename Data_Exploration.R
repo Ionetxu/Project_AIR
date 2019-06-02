@@ -713,6 +713,9 @@ ggplot(Eixample_NO2_week, aes(x =as.Date(dt), y=median)) +
 
 write.csv(Eixample_NO2_week, "/Users/ione/Desktop/Project_AIR/Data/Eixample_NO2_week.csv", row.names = F)
 
+#I will prepare data for Tableau, that includes weather:
+
+
 #15.How are public transport strikes affecting to pollution?
 #16.How are taxi strikes affecting to pollution?
 
@@ -720,5 +723,7 @@ write.csv(Eixample_NO2_week, "/Users/ione/Desktop/Project_AIR/Data/Eixample_NO2_
 
 #18.How is air traffic influencing pollution?
 #19.How is port activity influencing pollution?
+
+
 
 
