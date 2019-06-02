@@ -16,15 +16,16 @@ library(kableExtra)
 library(imputeTS)
 
 install.packages("bookdown")
-
+options(knitr.table.format = "html")
 
 airNO2 <- read_csv('/Users/ione/Desktop/Project_AIR/data/airNO2.csv')
 View(airNO2)
 dim(airNO2)
 summary(airNO2)
 str(airNO2)
+head(airNO2)
 
-# Giving new column names
+# Giving new column names bu using dplyr:
 airNO2 <- airNO2 %>% dplyr::rename(measurement_code='CODI MESURAMENT',
                                     pollutant='CONTAMINANT',
                                     station_code = 'CODI ESTACIÓ',
@@ -41,8 +42,7 @@ airNO2 <- airNO2 %>% dplyr::rename(measurement_code='CODI MESURAMENT',
 head(airNO2)
 unique(airNO2$station_name)
 unique(airNO2$station_code)
-airNO2 %>% filter(airNO2$station_code=='39') %>% .$station_name
-airNO2 %>% filter(airNO2$station_code=='56') %>% .$station_name
+
 
 #Are stations 3 and 44 the same? ( St Gervasi vs Gracia & St Gervasi)
 airNO2 %>% filter(airNO2$station_code=='3') %>% .$longitude
@@ -69,6 +69,7 @@ summary(airNO2)
 
 #Convert Time column in better format concatenating minutes and seconds
 #Take out a space of time column
+
 str_squish(airNO2$time)
 airNO2$time <- paste(airNO2$time,":00:00",sep = "")
 #Times that are 24:00:00 transform them into 0:00:00 of next day as R doesnt like the 24h format.
@@ -82,10 +83,9 @@ airNO2$dt <- with(airNO2, ymd(airNO2$dt) + hms(time))
 airNO2$dt <- as.POSIXct(airNO2$dt)
 head(print(airNO2$dt))
 #We drop columns that we don't need - measurement-code and station name & sort columns
-#I take out time because 24h is not able to interpret correctly
 airNO2_1 <- dplyr::select(airNO2, -c( "station_name", "time"))
 summary(airNO2_1)
-head(airNO2$measurement_code)
+
 #Let's analyze the data by plotting them by station
 
 St_gervasi_NO2 <- airNO2_1 %>% filter(station_code == 3)
@@ -100,7 +100,6 @@ Vall_hebron_NO2 <- airNO2_1 %>% filter(station_code == 56)
 Palau_reial_NO2 <- airNO2_1 %>% filter(station_code == 57)
 Observ_fabra_NO2 <- airNO2_1 %>% filter(station_code == 58)
 
-str(Eixample_NO2)
 
 #Let's do some initial plots by station:
 #St Gervasi
@@ -221,8 +220,6 @@ Observ_fabra_NO2_plt <- ggplot(Observ_fabra_NO2, aes(x = dt, y = value)) +
 Observ_fabra_NO2_plt
 #Data from 2018 to 2019
 
-#I'm going to discard Sagrera, St Gervasi and Vall Hebron station data from the study
-
 #Going to analyse the missing values by station
 
 #First I am going to plot a subset of data for Poblenou station:
@@ -295,10 +292,9 @@ Ciutatella_NO2_subset_plt
 #Missing values management - package imputeTS
 
 #Going to create a TS object with assumption frequency= 24 (hourly measurements with 1 day )
-#There is a bit gap of data in 2013-2014, so I will first try to do the imput between 2014-01-01 and 2017-12-31,
-#as there is a gap of data in 2018 as well.
-
-Poblenou_NO2_2014_1 <- Poblenou_NO2 %>% filter(year ==2014 & month == 1)
+#I will first try to do the imput between 2014-01-01 and 2017-12-31,as there is a gap of data in 2018
+#First I will try just a month to test and see the results:
+Poblenou_NO2_2014_1 <- Poblenou_NO2 %>% filter(year == 2014 & month == 1)
 Poblenou_NO2_2014_ts_1 <- ts(Poblenou_NO2_2014_1[,11], start = c(2014, 1), frequency = 24)
 plotNA.distributionBar(Poblenou_NO2_2014_ts_1, breaks = 31)
 plotNA.gapsize(Poblenou_NO2_2014_ts_1)
