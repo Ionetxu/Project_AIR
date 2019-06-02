@@ -64,7 +64,7 @@ airPM10$dt <- as.POSIXct(airPM10$dt)
 head(print(airNO2$dt))
 #We drop columns that we don't need - measurement-code and station name & sort columns
 #I take out time because 24h is not able to interpret correctly
-airPM10 <- dplyr::select(airPM10, -c("measurement_code", "station_name", "time"))
+airPM10 <- dplyr::select(airPM10, -c("station_name", "time"))
 summary(airPM10)
 
 #Let's analyze the data by filtering by station:
@@ -84,7 +84,8 @@ Observ_fabra_PM10 <- airPM10 %>% filter(station_code == 58)
 Poblenou_PM10_plt <- ggplot(Poblenou_PM10, aes(x = dt, y = value)) +
   geom_point(alpha = 0.5) +
   geom_smooth(color = "grey", alpha = 0.2) +
-  scale_x_datetime(date_breaks = "1 year",date_labels = "%Y") +
+  geom_hline(yintercept = 50, linetype="dashed", colour = "red")+
+  scale_x_datetime(date_breaks = "2 years",date_labels = "%Y") +
   labs( x = "Time", y = "PM10 (µg/m3)", title = "PM10(µg/m3) - Poblenou")
 Poblenou_PM10_plt
 #We see that we have only data from years 2004,2005, half 2006, 2007-2010, and 2016, 2017, half 2018.
@@ -93,7 +94,8 @@ Poblenou_PM10_plt
 Sants_PM10_plt <- ggplot(Sants_PM10, aes(x = dt, y = value)) +
   geom_point(alpha = 0.5) +
   geom_smooth(color = "grey", alpha = 0.2) +
-  scale_x_datetime(date_breaks = "1 year",date_labels = "%Y") +
+  geom_hline(yintercept = 50, linetype="dashed", colour = "red")+
+  scale_x_datetime(date_breaks = "2 years",date_labels = "%Y") +
   labs( x = "Time", y = "PM10 (µg/m3)", title = "PM10(µg/m3) - Sants")
 Sants_PM10_plt
 #We only have data from 2002 to 2004, and 2005 to 2009
@@ -102,6 +104,7 @@ Sants_PM10_plt
 Eixample_PM10_plt <- ggplot(Eixample_PM10, aes(x = dt, y = value)) +
   geom_point(alpha = 0.5) +
   geom_smooth(color = "grey", alpha = 0.2) +
+  geom_hline(yintercept = 50, linetype="dashed", colour = "red")+
   scale_x_datetime(date_breaks = "1 year",date_labels = "%Y") +
   labs( x = "Time", y = "PM10 (µg/m3)", title = "PM10(µg/m3) - Eixample")
 Eixample_PM10_plt
@@ -111,42 +114,32 @@ Eixample_PM10_plt
 Gracia_PM10_plt <- ggplot(Gracia_PM10, aes(x = dt, y = value)) +
   geom_point(alpha = 0.5) +
   geom_smooth(color = "grey", alpha = 0.2) +
+  geom_hline(yintercept = 50, linetype="dashed", colour = "red")+
   scale_x_datetime(date_breaks = "1 year",date_labels = "%Y") +
   labs( x = "Time", y = "PM10 (µg/m3)", title = "PM10(µg/m3) - Gracia")
 Gracia_PM10_plt
 #We have data from 2004 to 2007, and 2018 to 2010, and 2016 to 2019
 
-#Ciutatella
-Ciutatella_PM10_plt <- ggplot(Ciutatella_PM10, aes(x = dt, y = value)) +
-  geom_point(alpha = 0.5) +
-  geom_smooth(color = "grey", alpha = 0.2) +
-  scale_x_datetime(date_breaks = "1 year",date_labels = "%Y") +
-  labs( x = "Time", y = "PM10 (µg/m3)", title = "PM10(µg/m3) - Ciutatella")
-Ciutatella_PM10_plt
-#No data for Ciutatella
+# There is no data for Ciutatella
+
 
 #Torre_girona
 Torre_girona_PM10_plt <- ggplot(Torre_girona_PM10, aes(x = dt, y = value)) +
   geom_point(alpha = 0.5) +
   geom_smooth(color = "grey", alpha = 0.2) +
+  geom_hline(yintercept = 50, linetype="dashed", colour = "red")+
   scale_x_datetime(date_breaks = "1 year",date_labels = "%Y") +
   labs( x = "Time", y = "PM10 (µg/m3)", title = "PM10(µg/m3) - Torre girona")
 Torre_girona_PM10_plt
 #Data from 2016 to 2019
 
-#Vall_hebron
-Vall_hebron_PM10_plt <- ggplot(Vall_hebron_PM10, aes(x = dt, y = value)) +
-  geom_point(alpha = 0.5) +
-  geom_smooth(color = "grey", alpha = 0.2) +
-  scale_x_datetime(date_breaks = "1 year",date_labels = "%Y") +
-  labs( x = "Time", y = "PM10 (µg/m3)", title = "PM10(µg/m3) - Vall Hebron")
-Vall_hebron_PM10_plt
-#No DATA
+#There is no data for PM10 in Vall_hebron
 
 #Palau_reial
 Palau_reial_PM10_plt <- ggplot(Palau_reial_PM10, aes(x = dt, y = value)) +
   geom_point(alpha = 0.5) +
   geom_smooth(color = "grey", alpha = 0.2) +
+  geom_hline(yintercept = 50, linetype="dashed", colour = "red")+
   scale_x_datetime(date_breaks = "1 year",date_labels = "%Y") +
   labs( x = "Time", y = "PM10 (µg/m3)", title = "PM10(µg/m3) - Palau reial")
 Palau_reial_PM10_plt
@@ -156,6 +149,7 @@ Palau_reial_PM10_plt
 Observ_fabra_PM10_plt <- ggplot(Observ_fabra_PM10, aes(x = dt, y = value)) +
   geom_point(alpha = 0.5) +
   geom_smooth(color = "grey", alpha = 0.2) +
+  geom_hline(yintercept = 50, linetype="dashed", colour = "red")+
   scale_x_datetime(date_breaks = "1 year",date_labels = "%Y") +
   labs( x = "Time", y = "PM10 (µg/m3)", title = "PM10(µg/m3) - Observatori Fabra")
 Observ_fabra_PM10_plt
@@ -184,9 +178,14 @@ head(Eixample_PM10_2014_2018)
 
 write.csv(Eixample_PM10_2014_2018, "/Users/ione/Desktop/Project_AIR/Data/Eixample_PM10.csv", row.names = F)
 
+#I will also prepare data for Tableau, joining PM10 and NO2 with no NA imputations:
+Air_NO2_PM10 <- rbind(airNO2_1,airPM10)
+summary(Air_NO2_PM10)
+head(Air_NO2_PM10)
 
-
-
-
-
+View(Air_NO2_PM10)
+write.csv(Air_NO2_PM10, "/Users/ione/Desktop/Project_AIR/Data/Air_NO2_PM10.csv", row.names = F)
+Air_NO2_PM10_weather <- merge(Air_NO2_PM10,Weather_bcn, by ="dt")
+summary(Air_NO2_PM10_weather)
+write.csv(Air_NO2_PM10_weather, "/Users/ione/Desktop/Project_AIR/Data/Air_NO2_PM10_weather.csv", row.names = F)
 
