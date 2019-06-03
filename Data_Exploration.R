@@ -22,44 +22,35 @@ library(reshape)
 library(ggpubr)
 library(openair)
 library(data.table)
-require('data.table')
 library(robust)
+library(corrplot)
 
-# Data Exploration
+## Data Exploration
 
-#We are going to try to understand more the data and get more insights. There are multiple
-#questions I have about the data and I am going to try find the answers by using some additional datasets
-#like event calendar dates, weather and health data.
+##We are going to try to understand more the data and get more insights. There are multiple
+##questions I have about the data and I am going to try find the answers by using some additional datasets
+##like event calendar dates, weather and health data.
 
-#I will try to formulate questions or hypotesis and find answers from the data.
+##I will try to formulate questions or hypotesis and find answers from the data.
 
-
-#1.What is the trend & seasonality of the NO2 and PM10 pollutants in Eixample in the last 10 years? And in Gracia?
-#Let's start by reading data of NO2 and PM10 pollutants in Eixample and Gracia.
+##1.What is the trend & seasonality of the NO2 and PM10 pollutants in Eixample in the last 10 years? And in Gracia?
+##Let's start by reading data of NO2 and PM10 pollutants in Eixample and Gracia.
 
 Eixample_NO2 <- read_csv('/Users/ione/Desktop/Project_AIR/data/Eixample_NO2_2014_2018.csv')
 head(Eixample_NO2)
-summary(Eixample_NO2)
+
 
 Eixample_NO2 <- Eixample_NO2 %>% dplyr::rename(NO2='imp_2014_2018_NO2_Eixample_intp')
 summary(Eixample_NO2)
 
-#I am going to upload PM10 data:
+##I am going to upload PM10 data:
 Eixample_PM10 <- read_csv('/Users/ione/Desktop/Project_AIR/data/Eixample_PM10.csv')
 head(Eixample_PM10)
-summary(Eixample_PM10)
 
 Eixample_PM10 <- Eixample_PM10 %>% dplyr::rename(PM10='imp_2014_2018_PM10_Eixample_intp')
 summary(Eixample_PM10)
 
-
-#I am going to do the following analysis for NO2 in Eixample.
-#Daily average, min and max --> to see weekly seasonality
-#Monthly average, min and max --> yearly seasonality
-#Yearly average, min and max
-
-
-#Let's calculate the min, max, mean and median of each day:
+##I am going to calculate the daily, monthly and yearly values of the average, median, min and max of both pollutants NO2 and PM10 in Eixample from 2014 to 2018.
 
 stat_fun <- function(x) c(min = min(x), max = max(x), mean = mean(x), median = median(x))
 Eixample_NO2_day <- Eixample_NO2 %>%
@@ -74,16 +65,7 @@ Eixample_PM10_day <- Eixample_PM10 %>%
                FUN        = stat_fun)
 summary(Eixample_PM10_day)
 
-
-# NOT SURE ABOUT using XTS object. REVIEW
-#Use as.xts to generate an xts object of average daily NO2 data:
-Eixample_NO2_day_xts <- as.xts((Eixample_NO2_day[,-1]), order.by = as.Date(Eixample_NO2_day$dt))
-head(Eixample_NO2_day_xts)
-plot.zoo(Eixample_NO2_day_xts["2018-01"], plot.type = "single", xy.labels = c("Time", "NO2_daily_values"))
-autoplot(Eixample_NO2_day_xts["2018-01"], facets = FALSE)
-
-#Let's plot the daily average:
-
+#Let's plot the daily averages:
 ggplot(Eixample_NO2_day, aes(x = as.Date(dt), y = mean)) +
   geom_line(alpha = 0.5) +
   geom_smooth(color = "grey", alpha = 0.2) +
@@ -117,11 +99,6 @@ Eixample_PM10_month <- Eixample_PM10 %>%
                FUN        = stat_fun)
 summary(Eixample_PM10_month)
 
-#Not sure about XTS object. REVIEW:
-Eixample_NO2_month_xts <- as.xts((Eixample_NO2_month[,-1]), order.by = as.Date(Eixample_NO2_month$dt))
-summary(Eixample_NO2_month_xts)
-autoplot(Eixample_NO2_month_xts$mean)
-
 
 ggplot( data =Eixample_NO2_month , aes(x = as.Date(dt), y = mean)) +
   geom_line(alpha = 0.5) +
@@ -147,7 +124,7 @@ Eixample_NO2_year <- Eixample_NO2 %>%
   tq_transmute(select     = NO2,
                mutate_fun = apply.yearly,
                FUN        = stat_fun)
-View(Eixample_NO2_year)
+head(Eixample_NO2_year,5)
 #The limit recommended by EU standards is not met in any year (average yearly limit of 40µg/m3).
 
 #4.What is the average yearly amount of PM10 in each station in Barcelona by year from 2014 to 2018? Does it pass the limit in any station?
@@ -155,7 +132,7 @@ Eixample_PM10_year <- Eixample_PM10 %>%
   tq_transmute(select     = PM10,
                mutate_fun = apply.yearly,
                FUN        = stat_fun)
-View(Eixample_PM10_year)
+head(Eixample_PM10_year,5)
 #All years the yearly average limits set by EU are complied (average yearly limit of 40µg/m3).
 
 #5.How many times does NO2 pass the max hourly limit per year (concentration of hourly 200 µg/m3
@@ -166,7 +143,7 @@ sum(Eixample_NO2$NO2 > 200)
 
 #There are no values that are higher than 200 µg/m3 en Eixample, so limits are complied.
 
-#6.How many times does PM10 pass the max hourly limit per year concentration of daily 50 µg/m3
+#How many times does PM10 pass the max hourly limit per year concentration of daily 50 µg/m3
 #more than 35 times a year?
 
 Eixample_PM10_day_2014 <- Eixample_PM10_day %>% filter( dt <= "2014-12-31")
@@ -207,7 +184,8 @@ Eixample_NO2_day[order(Eixample_NO2_day$max, decreasing = TRUE),]
 #9 2017-11-24    80   171  116.  113.
 #10 2015-06-04    62   166  103.   91.7
 
-Eixample_PM10_day[order(Eixample_PM10_day$max, decreasing = TRUE),]
+outliers <- Eixample_PM10_day[order(Eixample_PM10_day$max, decreasing = TRUE),]
+outliers
 #dt           min   max  mean median
 #<date>     <dbl> <dbl> <dbl>  <dbl>
 #1 2017-06-24    20  1167 303.    54
@@ -262,7 +240,6 @@ summary(Eixample_NO2_weather)
 Eixample_PM10_weather <- merge(Eixample_PM10,Weather_bcn,by="dt" )
 summary(Eixample_PM10_weather)
 
-
 #I am going to study the correlations between variables. I will first create a correlation matrix:
 
 cormat <- round(cor(Eixample_NO2_weather),2)
@@ -312,15 +289,14 @@ head(melted_cormat_NO2)
 melted_cormat_PM10 <- melt(cormat_PM10)
 head(melted_cormat_PM10)
 
-ggplot(data = melted_cormat_NO2, aes(x=X1, y=X2, fill=value)) +
+ggplot(data = melted_cormat_NO2, aes(x=Var1, y=Var2, fill=value)) +
   geom_tile()
-ggplot(data = melted_cormat_PM10, aes(x=X1, y=X2, fill=value)) +
+ggplot(data = melted_cormat_PM10, aes(x=Var1, y=Var2, fill=value)) +
   geom_tile()
 
 
 # Correlation Heatmaps
-
-ggplot(data = melted_cormat_NO2, aes(X1, X2, fill = value))+
+ggplot(data = melted_cormat_NO2, aes(Var1, Var2, fill = value))+
   geom_tile(color = "white")+
   scale_fill_gradient2(low = "blue", high = "red", mid = "white",
                        midpoint = 0, limit = c(-1,1), space = "Lab",
@@ -341,13 +317,16 @@ ggplot(data = melted_cormat_PM10, aes(X1, X2, fill = value))+
                                    size = 12, hjust = 1))+
   coord_fixed()
 
-#The heatplot doesnt show what I wanted, so I will now try to plot the variables with more correlation,
-# the NO2 pollution with wind speed & direction as well as Atmospheric pressure.
+#Other type of graphs for correlation matrixes:
+corrplot(cormat_NO2, type="upper", order="hclust", tl.srt=45)
+corrplot(cormat_PM10, type="upper",order="hclust", tl.srt=45)
+
+#I will plot the most correlated variables, the NO2 pollution with wind speed & direction as well as Atmospheric pressure.
 
 ggscatter(Eixample_NO2_weather_cor_NA, x = "NO2", y = "P",
           add = "reg.line", conf.int = TRUE,
           cor.coef = TRUE, cor.method = "pearson", alpha = 0.1,
-          xlab = "NO2 (µg/m3)", ylab = "Atmospheric pressure (mbar)", title = "NO2 and P relationship in Eixample")
+          xlab = "NO2 (µg/m3)", ylab = "Atmospheric pressure (hPa)", title = "NO2 and P relationship in Eixample")
 
 #In the plot we can see that the NO2 levels are slightly higher with higher P.
 
@@ -355,7 +334,7 @@ ggscatter(Eixample_NO2_weather_cor_NA, x = "NO2", y = "P",
 ggscatter(Eixample_NO2_weather_cor_NA, x = "NO2", y = "ws",
           add = "reg.line", conf.int = TRUE,
           cor.coef = TRUE, cor.method = "pearson", alpha = 0.1,
-          xlab = "NO2 (µg/m3)", ylab = "Wind speed (km/h)", title = "NO2 and Wind speed relationship in Eixample")
+          xlab = "NO2 (µg/m3)", ylab = "Wind speed (m/s)", title = "NO2 and Wind speed relationship in Eixample")
 #This graph tells us that when the wind is intense, the pollution tends to be lower. The lower the wind
 #speed, the higher the pollution.
 head(Eixample_NO2_weather_cor_NA)
@@ -380,20 +359,14 @@ percentileRose( mydata = Eixample_NO2_weather_cor_NA, wd = "wd", pollutant = "NO
 ggscatter(Eixample_PM10_weather_cor_NA, x = "PM10", y = "T",
           add = "reg.line", conf.int = TRUE,
           cor.coef = TRUE, cor.method = "pearson", alpha = 0.1,
-          xlab = "PM10 (µg/m3)", ylab = "Temperature", title = "PM10 and T relationship in Eixample") +
+          xlab = "PM10 (µg/m3)", ylab = "Temperature(°C)", title = "PM10 and T relationship in Eixample") +
           xlim(c(0,200)) #taking out outliers
 #When we have eliminated the outliers ( PM10>200), the correlation with Temperature is a bit higher (0,23)
 
 ggscatter(Eixample_PM10_weather_cor_NA, x = "PM10", y = "P",
           add = "reg.line", conf.int = TRUE,
           cor.coef = TRUE, cor.method = "pearson", alpha = 0.1,
-          xlab = "PM10 (µg/m3)", ylab = "Temperature", title = "PM10 and P relationship in Eixample") +
-  xlim(c(0,200)) #taking out outliers
-#When we have eliminated the outliers ( PM10>200), the correlation coef is 0.15 with Atmospheric Pressure.
-ggscatter(Eixample_PM10_weather_cor_NA, x = "PM10", y = "P",
-          add = "reg.line", conf.int = TRUE,
-          cor.coef = TRUE, cor.method = "pearson", alpha = 0.1,
-          xlab = "PM10 (µg/m3)", ylab = "Temperature", title = "PM10 and P relationship in Eixample") +
+          xlab = "PM10 (µg/m3)", ylab = "Pressure(hPA)", title = "PM10 and P relationship in Eixample") +
   xlim(c(0,200)) #taking out outliers
 #When we have eliminated the outliers ( PM10>200), the correlation coef is 0.15 with Atmospheric Pressure.
 
@@ -407,7 +380,7 @@ percentileRose( mydata = Eixample_PM10_weather_cor_NA, wd = "wd", pollutant = "P
 
 #12.Are hospitalizations with respiratory issues affected by peaks of pollution?
 
-health_resp <- read_csv('/Users/ione/Desktop/Project_AIR/data/Respiratory_2014-2017.csv',, locale = locale(encoding = "latin1"))
+health_resp <- read_csv('/Users/ione/Desktop/Project_AIR/data/Respiratory_2014-2017.csv', locale = locale(encoding = "latin1"))
 summary(health_resp)
 head(health_resp)
 
@@ -448,11 +421,6 @@ head(health_resp)
 Eixample_NO2_day$dt <- as.Date(Eixample_NO2_day$dt)
 Eixample_PM10_day$dt <- as.Date(Eixample_PM10_day$dt)
 
-health_resp_2014 <- health_resp %>% filter(year >=2014, year <= 2018)
-head(health_resp_2014)
-tail(health_resp_2014)
-str(health_resp_2014)
-
 #We only have health data from 2014 to 2018 so we will limit the pollution data accordingly.
 Eixample_NO2_day <- Eixample_NO2_day %>% filter ( dt <= "2017-12-31")
 tail(Eixample_NO2_day)
@@ -460,18 +428,18 @@ Eixample_PM10_day <- Eixample_PM10_day %>% filter ( dt <= "2017-12-31")
 tail(Eixample_PM10_day)
 
 #I am going to perform the join of health and NO2 data:
-Eixample_NO2_resp <- merge(Eixample_NO2_day,health_resp_2014,by="dt" )
+Eixample_NO2_resp <- merge(Eixample_NO2_day,health_resp,by="dt" )
 head(Eixample_NO2_resp)
 
 #Similarly I will join PM10 and health data with respiratory issues:
-Eixample_PM10_resp <- merge(Eixample_PM10_day,health_resp_2014,by="dt" )
+Eixample_PM10_resp <- merge(Eixample_PM10_day,health_resp,by="dt" )
 head(Eixample_PM10_resp)
 
 #I am going to transform the data for the correlation plot.I need to aggregate the data
 #by dt,but I need different aggregation types for each column, avg for NO2/PM10 and sum for hospitalizations:
 
 df_NO2 <- data.table(Eixample_NO2_resp)
-df.NO2_resp <- df[, list(NO2=mean(mean), Hospitalizations_resp=sum(Hospitalizations)),
+df.NO2_resp <- df_NO2[, list(NO2=mean(mean), Hospitalizations_resp=sum(Hospitalizations)),
              by=dt]
 df.NO2_resp
 
@@ -490,12 +458,11 @@ shapiro.test(df.NO2_resp$NO2) # => W = 0.97615, p-value = 7.869e-15
 shapiro.test(df.NO2_resp$Hospitalizations_resp) # => W = 0.98142, p-value = 8.661e-13
 
 #Now I will perform a Pearson correlation test:
-
 res <- cor.test(df.NO2_resp$NO2, df.NO2_resp$Hospitalizations_resp,
                 method = "pearson")
 res
 
-#Correlation coef is 0.5
+#Correlation coef is 0.42
 
 # Shapiro-Wilk normality test for PM10:
 
@@ -536,7 +503,7 @@ ggplot(df.NO2_resp, aes(x =dt)) +
   coord_cartesian(xlim=c(as.Date("2014-01-01"),as.Date("2014-01-16"))) +
   geom_line(aes(y = Hospitalizations_resp, colour = "Hospitalizations")) +
   labs( x = "Time", y = "Hospitalizations", title = "NO2(µg/m3) - Respiratory issues in Eixample - week") +
-  scale_x_date(date_breaks = "1 day", date_labels = "%a")
+  scale_x_date(date_breaks = "2 days", date_labels = "%d-%b")
 
 ggplot(df.NO2_resp, aes(x =dt)) +
       geom_line(aes(y = NO2, colour = "NO2")) +
@@ -569,14 +536,7 @@ health_heart <- health_heart %>% dplyr::rename(day="dia",
 head(health_heart)
 str(health_heart)
 
-#We are now going to transform the data for the correlation plot.We need to aggregate the data
-#by dt so we have 1 value of pollution observation by 1 value of hospitalizations per day.
-#Because we need different aggregation types for each column, avg for NO2 and sum for hospitalizations:
-
-
-#Month names are strings in catalan and the system doesn't understand them when parsing into date format.
-#I will translate the month names and transform into date format:
-
+#I translate all values of month from catalan to english:
 health_heart$month[health_heart$month == "Gener"] <- "January"
 health_heart$month[health_heart$month == "Febrer"] <- "February"
 health_heart$month[health_heart$month == "Març"] <- "March"
@@ -637,7 +597,7 @@ ggscatter(df_PM10_heart, x = "PM10", y = "Hospitalizations_heart",
           conf.int = TRUE,
           add.params = list(color = "blue",
                             fill = "lightgray") ) +
-  stat_cor(method = "pearson", label.x = 3, label.y = 65)  # Add correlation coefficient
+  stat_cor(method = "pearson", label.x = 3, label.y = 100)  # Add correlation coefficient
 
 #I will try to do the correlation analysis for PM10 with a robust analytical covariance method
 #so that the effect of the outliers is reduced.
@@ -718,9 +678,7 @@ write.csv(Eixample_NO2_week, "/Users/ione/Desktop/Project_AIR/Data/Eixample_NO2_
 
 #15.How are public transport strikes affecting to pollution?
 #16.How are taxi strikes affecting to pollution?
-
 #17.Is a BCN football match affecting to pollution?
-
 #18.How is air traffic influencing pollution?
 #19.How is port activity influencing pollution?
 
