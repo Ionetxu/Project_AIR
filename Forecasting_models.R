@@ -16,13 +16,12 @@ library(imputeTS)
 library(ggfortify)
 library(urca)
 library(forecast)
+library(seasonal)
 
 ##For forecasting purposes, we are going to try do it only for Eixample station ,as it has the higher
 ##pollution levels and completeness of data.
 
 #Let's read the csv we prepared previously in the first analysis script.
-
-Eixample <- read_csv('/Users/ione/Desktop/Project_AIR/data/Eixample_NO2_ts.csv')
 
 Eixample_NO2_2014_2018 <- read_csv('/Users/ione/Desktop/Project_AIR/data/Eixample_NO2_2014_2018.csv')
 Eixample_NO2_2018 <- read_csv('/Users/ione/Desktop/Project_AIR/data/Eixample_NO2_2018.csv')
@@ -33,14 +32,9 @@ summary(Eixample )
 str(Eixample )
 
 ##Because the ts is again in dataframe format,let's transform it again to ts:
-
 Eixample_NO2_ts <- ts(Eixample_NO2_2014_2018[,10], frequency = 24)
 Eixample_NO2_2018_ts <- ts(Eixample_NO2_2018[,10], frequency = 24)
 Eixample_NO2_2018_09_ts <- ts(Eixample_NO2_2018_09[,10], frequency = 24)
-
-
-#To do: test with seasonality equal to one year:
-Eixample_NO2_year_ts <- ts(Eixample_NO2_2014_2018[,11], start = c(2014, 1), frequency = 8760)
 
 ##Let's plot the ts to see how it looks:
 autoplot(Eixample_NO2_ts)
@@ -70,6 +64,12 @@ imp_2018_09_NO2_Eixample_intp <- na.interpolation(Eixample_NO2_2018_09_ts)
 plotNA.imputations(x.withNA = Eixample_NO2_ts, x.withImputations = imp_2014_2018_NO2_Eixample_intp)
 plotNA.imputations(x.withNA = Eixample_NO2_2018_ts, x.withImputations = imp_2018_NO2_Eixample_intp)
 plotNA.imputations(x.withNA = Eixample_NO2_2018_09_ts, x.withImputations = imp_2018_09_NO2_Eixample_intp)
+
+#Decomposition of time series
+
+#I will decompose the month long time period as an additive time series
+Eixample_NO2_Comp <- decompose(imp_2018_09_NO2_Eixample_intp)
+plot(Eixample_NO2_Comp)
 
 
 #AUTOREGRESSION METHODS:
@@ -114,26 +114,25 @@ fcavg1 <- meanf(train1, h=24)
 autoplot(fcavg1)
 summary(fcavg1)
 checkresiduals(fcavg1)
-accuracy(fcavg1,imp_2014_2018_NO2_Eixample_intp)
+acavg1 <- accuracy(fcavg1,imp_2014_2018_NO2_Eixample_intp)
+acavg1
 
 fcavg2 <- meanf(train2, h=24)
 autoplot(fcavg2)
-summary(fcavg2)
 checkresiduals(fcavg2)
-accuracy(fcavg2,imp_2018_NO2_Eixample_intp)
+acavg2 <- accuracy(fcavg2,imp_2018_NO2_Eixample_intp)
+acavg2
 
 fcavg3 <- meanf(train3, h=24)
 autoplot(fcavg3)
-summary(fcavg3)
 checkresiduals(fcavg3)
-accuracy(fcavg3,imp_2018_09_NO2_Eixample_intp)
+acavg3 <- accuracy(fcavg3,imp_2018_09_NO2_Eixample_intp)
+acavg3
 
 ##Seasonal Naïve METHOD:
 fcsn1 <- snaive(train1, h = 24)
-autoplot(fcsn1)
-summary(fcsn1)
 checkresiduals(fcsn1)
-accuracy(fcsn1,imp_2014_2018_NO2_Eixample_intp)
+acsnm1 <- accuracy(fcsn1,imp_2014_2018_NO2_Eixample_intp)
 
 fcsn2 <- snaive(train2, h = 24)
 autoplot(fcsn2 )
@@ -193,17 +192,19 @@ accuracy(fhw3, imp_2018_09_NO2_Eixample_intp)
 
 # Function to return ETS forecasts
 fitets1 <- ets(train1)
-checkresiduals(fitets1)
-fitets1 %>% forecast(h = 24) %>% autoplot()
+e1 <- fitets1 %>% forecast(h = 24) %>% accuracy(imp_2014_2018_NO2_Eixample_intp)
+e1
 #With 4 years training, it gives an ETS(M,N,M) model with no white noise(p-value < 2.2e-16)
 
 fitets2 <- ets(train2)
 checkresiduals(fitets2)
 fitets2 %>% forecast(h =24) %>% autoplot()
+e2 <- fitets3 %>% forecast(h = 24) %>% accuracy(imp_2018_NO2_Eixample_intp)
+e2
 #With 11 months training, it gives an ETS(M,N,A) model with no white noise (p-value < 2.2e-16)
 
 fitets3 <- ets(train3)
-checkresiduals(fitets3)
+summary(fitets3)
 fitets3 %>% forecast(h = 24) %>% autoplot()
 e3 <- fitets3 %>% forecast(h = 24) %>% accuracy(imp_2018_09_NO2_Eixample_intp)
 e3
@@ -226,15 +227,21 @@ e3
 #Consequently, small p-values (e.g., less than 0.05) suggest that differencing is required.
 
 train1 %>% ur.kpss() %>% summary()
+train2 %>% ur.kpss() %>% summary()
+train3 %>% ur.kpss() %>% summary()
 
 #Value of test-statistic is: 1.9162 so we can discard that it's a stationary time series, no
 #differencing is required.
 ndiffs(train1)
+ndiffs(train2)
+ndiffs(train3)
 
-#This function tells as that one difference is required to make the data stationary.
-#We will use the parameter d=1.
+#This function tells us that differencing is required for train1.
+
 #This other function tells us if we need stationary differencing:
 nsdiffs(train1)
+nsdiffs(train2)
+nsdiffs(train3)
 #The result is 0 so no need for seasonal differencing (D=0).
 #To implement a seasonal ARIMA model, we need to determine parameters {p,d,q}{P,D,Q}
 
@@ -316,7 +323,7 @@ a3 <- fitautoarima3 %>% forecast(h = 24) %>% accuracy(imp_2018_09_NO2_Eixample_i
 a3
 #RMSE = 12.34
 
-#Complex seasonality - NEEDS WORK
+#Complex seasonality -
 #With pollution data, I think we have a case of multiple seasonality with daily, weekly and yearly
 #seasons. To deal with these we should adapt our models
 #If the time series is relatively short so that only one type of seasonality is present,
@@ -324,16 +331,13 @@ a3
 #But when the time series is long enough so that multiple seasonal periods appear, it will be necessary to use STL,
 #dynamic harmonic regression or TBATS.
 
-#STL with multiple seasonal periods
-train1 %>% mstl() %>% autoplot()
-
-train3 %>%  stlf() %>% autoplot()
-
 #TBATS model
 train1 %>% tbats() -> fit_tbats
 summary(fit_tbats)
-fc1 <- forecast(fit_tbats, h=8760)
-autoplot(fc1)
+fctbats1<- forecast(fit_tbats, h=24)
+residuals(fctbats1)
+checkresiduals
+
 
 train2 %>% tbats() -> fit_tbats2
 summary(fit_tbats2)
@@ -341,6 +345,6 @@ fc2 <- forecast(fit_tbats2, h=24)
 autoplot(fc2)
 
 train3 %>% tbats() -> fit_tbats3
-summary(fit_tbats3)
 fc3 <- forecast(fit_tbats3, h=24)
 autoplot(fc3)
+accuracy(fc3,imp_2018_09_NO2_Eixample_intp)
