@@ -379,15 +379,6 @@ str(Poblenou_NO2_2014_2017)
 
 write.csv(Poblenou_NO2_2014_2017, "/Users/ione/Desktop/Project_AIR/Data/Poblenou_NO2.csv", row.names = F)
 
-#I am going to write the new dataframe with the ts element with new imputed values:
-#SANTS:
-Sants_NO2_2014_2017 <- Sants_NO2 %>% filter(year >=2014, year <= 2017)
-Sants_NO2_2014_2017_ts <- ts(Sants_NO2_2014_2017[,11], start = c(2014, 1), frequency = 24)
-imp_2014_2017_NO2_Sants_intp <- na.interpolation(Sants_NO2_2014_2017_ts)
-plotNA.imputations(x.withNA = Sants_NO2_2014_2017_ts, x.withImputations = imp_2014_2017_NO2_Sants_intp)
-write.csv(Sants_NO2_2014_2017, "/Users/ione/Desktop/Project_AIR/Data/Sants_NO2.csv", row.names = F)
-
-
 
 #I am going to use Eixample data for forecasting purposes:
 #I am going to subset 3 training datasets:
@@ -426,22 +417,3 @@ write.csv(Eixample_NO2_2018, "/Users/ione/Desktop/Project_AIR/Data/Eixample_NO2_
 write.csv(Eixample_NO2_2014_2018, "/Users/ione/Desktop/Project_AIR/Data/Eixample_NO2_2014_2018.csv", row.names = F)
 write.csv(Eixample_NO2_2018_09, "/Users/ione/Desktop/Project_AIR/Data/Eixample_NO2_2018_09.csv", row.names = F)
 write.csv(Eixample_NO2, "/Users/ione/Desktop/Project_AIR/Data/Eixample_NO2.csv", row.names = F)
-#TS structures:
-write.csv(imp_2014_2018_NO2_Eixample_intp, "/Users/ione/Desktop/Project_AIR/Data/Eixample_NO2_all_ts.csv", row.names = F)
-write.csv(imp_2018_NO2_Eixample_intp, "/Users/ione/Desktop/Project_AIR/Data/Eixample_NO2_2018_ts.csv", row.names = F)
-write.csv(imp_2018_09_NO2_Eixample_intp, "/Users/ione/Desktop/Project_AIR/Data/Eixample_NO2_2018_09_ts.csv", row.names = F)
-
-
-#I am going to use Gracia data for forecasting purposes:
-#Gracia:
-Gracia_NO2_2014_2018 <- Gracia_NO2 %>% filter(year >=2014, year <= 2018)
-Gracia_NO2_2014_2018_ts <- ts(Gracia_NO2_2014_2018[,11], start = c(2014, 1), frequency = 24)
-plotNA.distributionBar(Gracia_NO2_2014_2018_ts, breaks = 12)
-plotNA.gapsize(Gracia_NO2_2014_2018_ts)
-statsNA(Gracia_NO2_2014_2018_ts)
-imp_2014_2018_NO2_Gracia_intp <- na.interpolation(Gracia_NO2_2014_2018_ts)
-
-Gracia_NO2_2014_2018 <- Gracia_NO2_2014_2018 %>% mutate(imp_2014_2018_NO2_Gracia_intp)
-plotNA.imputations(x.withNA = Gracia_NO2_2014_2018_ts, x.withImputations = imp_2014_2018_NO2_Gracia_intp)
-write.csv(Gracia_NO2_2014_2018, "/Users/ione/Desktop/Project_AIR/Data/Gracia_NO2_2018.csv", row.names = F)
-write.csv(imp_2014_2018_NO2_Gracia_intp, "/Users/ione/Desktop/Project_AIR/Data/Gracia_NO2_ts.csv", row.names = F)
