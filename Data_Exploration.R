@@ -31,27 +31,19 @@ library(corrplot)
 ##questions I have about the data and I am going to try find the answers by using some additional datasets
 ##like event calendar dates, weather and health data.
 
-##I will try to formulate questions or hypotesis and find answers from the data.
-
-##1.What is the trend & seasonality of the NO2 and PM10 pollutants in Eixample in the last 10 years? And in Gracia?
 ##Let's start by reading data of NO2 and PM10 pollutants in Eixample and Gracia.
 
 Eixample_NO2 <- read_csv('/Users/ione/Desktop/Project_AIR/data/Eixample_NO2_2014_2018.csv')
 head(Eixample_NO2)
-
-
 Eixample_NO2 <- Eixample_NO2 %>% dplyr::rename(NO2='imp_2014_2018_NO2_Eixample_intp')
 summary(Eixample_NO2)
 
-##I am going to upload PM10 data:
 Eixample_PM10 <- read_csv('/Users/ione/Desktop/Project_AIR/data/Eixample_PM10.csv')
 head(Eixample_PM10)
-
 Eixample_PM10 <- Eixample_PM10 %>% dplyr::rename(PM10='imp_2014_2018_PM10_Eixample_intp')
 summary(Eixample_PM10)
 
 ##I am going to calculate the daily, monthly and yearly values of the average, median, min and max of both pollutants NO2 and PM10 in Eixample from 2014 to 2018.
-
 stat_fun <- function(x) c(min = min(x), max = max(x), mean = mean(x), median = median(x))
 Eixample_NO2_day <- Eixample_NO2 %>%
   tq_transmute(select     = NO2,
@@ -112,13 +104,11 @@ ggplot(data =Eixample_PM10_month ,aes(x = as.Date(dt), y = mean)) +
   geom_smooth(color = "grey", alpha = 0.2) +
   scale_x_date(breaks='6 months', date_labels = "%m-%Y")
 
-#For NO2 I see multiple seasonality (day, week, year) and the trend seems slightly positive.
-#NO2 levels have not improved significantly since 2014.
-
+#I don't see a significant trend in these graphs for NO2.
 #For PM10 the seasonality is even more difficult to see, and there is not visible trend.
 
 
-#3. What is the average yearly amount of NO2 in each station in Barcelona by year from 2014 to 2018? Does it pass the limit in any station?
+# What is the average yearly amount of NO2 in each station in Barcelona by year from 2014 to 2018? Does it pass the limit in any station?
 
 Eixample_NO2_year <- Eixample_NO2 %>%
   tq_transmute(select     = NO2,
@@ -127,7 +117,7 @@ Eixample_NO2_year <- Eixample_NO2 %>%
 head(Eixample_NO2_year,5)
 #The limit recommended by EU standards is not met in any year (average yearly limit of 40µg/m3).
 
-#4.What is the average yearly amount of PM10 in each station in Barcelona by year from 2014 to 2018? Does it pass the limit in any station?
+#What is the average yearly amount of PM10 in each station in Barcelona by year from 2014 to 2018? Does it pass the limit in any station?
 Eixample_PM10_year <- Eixample_PM10 %>%
   tq_transmute(select     = PM10,
                mutate_fun = apply.yearly,
@@ -135,8 +125,8 @@ Eixample_PM10_year <- Eixample_PM10 %>%
 head(Eixample_PM10_year,5)
 #All years the yearly average limits set by EU are complied (average yearly limit of 40µg/m3).
 
-#5.How many times does NO2 pass the max hourly limit per year (concentration of hourly 200 µg/m3
-# more than 18 times?
+#How many times does NO2 pass the max hourly limit per year (concentration of hourly 200 µg/m3
+#more than 18 times?
 
 head(sort(Eixample_NO2$NO2, decreasing = TRUE),10)
 sum(Eixample_NO2$NO2 > 200)
@@ -168,7 +158,7 @@ Eixample_PM10_day_2018 %>% summarize(n_cases = sum(Eixample_PM10_day_2018$mean >
 #The concentrations of PM10 are complying with the EU standard limits
 
 
-#7.What is the max day of the week with higher avg NO2, PM10 pollution normally? And the minimum?
+#What dates are the ones with max values of NO2, PM10 pollution? What are the outliers?
 Eixample_NO2_day[order(Eixample_NO2_day$max, decreasing = TRUE),]
 #Analyze the days
 #dt           min   max  mean median
@@ -202,17 +192,8 @@ outliers
 #From top 10 values, 5 of them are from 24th June (Sant Joan). Including the highest observation with value 1167 on 2017-06-24.
 #Second highest PM10 value since 2014, happened on the 7th June 2015, when Barcelona won its
 #5th Champions league against Juventus.
-#Third value and fourth value, 2015-10-03 and 2015-10-04, are part of a weekend, not sure why the high values.
-#Tenth value on the 2014-11-30, not sure why.
 
-#8.Is there any difference between weekday and weekend?
-
-
-#9.What is the month with higher average pollution NO2, PM10 during the year? And the minimum?
-
-#10.What is the most polluted station? And the least?
-
-#11.What is the relationship with weather and pollution? What is the component with more correlation?
+#What is the relationship with weather and pollution? What is the component with more correlation?
 
 #Let's load the data from Raval- zoo in Barcelona (EMA = X4). I'm going to use the weather data from
 #Raval to compare it with pollution measured in Eixample.
@@ -224,7 +205,6 @@ tail(Weather_bcn)
 
 #Data column is in format "1/1/2014 1:00", and it's a character, so I'll change it to be same as
 #the pollution format.
-
 Weather_bcn <- Weather_bcn %>% dplyr::rename(dt="DATA (T.U.)",
                                              wd = "DV10",
                                              ws = "VV10")
@@ -242,9 +222,7 @@ summary(Eixample_PM10_weather)
 
 #I am going to study the correlations between variables. I will first create a correlation matrix:
 
-cormat <- round(cor(Eixample_NO2_weather),2)
-
-#It doesnt work because all features must be numeric.I will also choose variables that are interesting.
+#All variables must be numeric, and I will only choose variables that are interesting for the correlation matrix.
 
 sapply(Eixample_NO2_weather, is.numeric)
 Eixample_NO2_weather_num_data <- Eixample_NO2_weather[, sapply(Eixample_NO2_weather, is.numeric)]
@@ -252,6 +230,7 @@ head(Eixample_NO2_weather_num_data)
 Eixample_NO2_weather_cor <- dplyr::select(Eixample_NO2_weather_num_data, -c("station_code", "latitude", "longitude","year","month","day","value"))
 head(Eixample_NO2_weather_cor)
 sum(is.na(Eixample_NO2_weather_cor))
+
 #I have 87 values that are NA-s. I need to correct them otherwise the cor matrix won't work.
 Eixample_NO2_weather_cor_NA <-Eixample_NO2_weather_cor[complete.cases(Eixample_NO2_weather_cor), ]
 sum(is.na(Eixample_NO2_weather_cor_NA))
@@ -259,7 +238,7 @@ sum(is.na(Eixample_NO2_weather_cor_NA))
 cormat_NO2 <- round(cor(Eixample_NO2_weather_cor_NA),2)
 head(cormat_NO2)
 
-#Looking at the data, the only variable that have some correlation with the NO2 values
+#Looking at the data, the only variables that have some correlation with the NO2 values
 #in Eixample are Wind speed ( with correlation coefficient of -0.31 and 0.32 for max speed), Wind direction
 # with coefficient of -0.15, and atmospheric pressure with positive coefficient of 0.2. I am going to plot some graphs to see
 # this relationships a bit further.
@@ -307,7 +286,7 @@ ggplot(data = melted_cormat_NO2, aes(Var1, Var2, fill = value))+
   coord_fixed()
 
 
-ggplot(data = melted_cormat_PM10, aes(X1, X2, fill = value))+
+ggplot(data = melted_cormat_PM10, aes(Var1, Var2, fill = value))+
   geom_tile(color = "white")+
   scale_fill_gradient2(low = "blue", high = "red", mid = "white",
                        midpoint = 0, limit = c(-1,1), space = "Lab",
@@ -635,52 +614,8 @@ ggplot(df_NO2_heart, aes(x =dt)) +
 
 
 
-#14.Is MWC affecting to pollution?
-#MWC has been celebrating in BCN since 2006, and it has significant impact in the mobility of the city.
-#If we observe the pollution of the event historically:
-Eixample_NO2<-read_csv('/Users/ione/Desktop/Project_AIR/data/Eixample_NO2.csv')
-summary(Eixample_NO2)
-
-#I want data also from 2019, so I will subset the data in order to inpute NA values and be able to
-#calculate the mean, median, max and min.
-Eixample_NO2_2014_2019 <- Eixample_NO2 %>% filter(year >=2014)
-Eixample_NO2_2014_2019_ts <- ts(Eixample_NO2_2014_2019[,10], start = c(2014, 1), frequency = 24)
-
-plotNA.distributionBar(Eixample_NO2_2014_2019_ts, breaks = 12)
-Eixample_NO2_2014_2019_intp <- na.interpolation(Eixample_NO2_2014_2019_ts)
-Eixample_NO2_2014_2019_complete <- Eixample_NO2_2014_2019 %>% mutate(Eixample_NO2_2014_2019_intp)
-
-plotNA.imputations(x.withNA = Eixample_NO2_2014_2019_ts, x.withImputations = Eixample_NO2_2014_2019_intp)
-
-summary(Eixample_NO2_2014_2019_complete)
 
 
-Eixample_NO2_2014_2019_complete <- Eixample_NO2_2014_2019_complete %>% dplyr::rename(NO2="Eixample_NO2_2014_2019_intp")
-summary(Eixample_NO2_2014_2019_complete)
-
-Eixample_NO2_week <- Eixample_NO2_2014_2019_complete %>%
-  tq_transmute(select     = NO2,
-               mutate_fun = apply.weekly,
-               FUN        = stat_fun)
-summary(Eixample_NO2_week)
-head(Eixample_NO2_week)
-
-
-ggplot(Eixample_NO2_week, aes(x =as.Date(dt), y=median)) +
-  coord_cartesian(xlim=c(as.Date("2014-01-01"),as.Date("2014-03-31"))) +
-  labs( x = "Time", y = "NO2", title = "NO2(µg/m3) weekly in Eixample - 2014") +
-  scale_x_date(date_breaks = "1 month", date_minor_breaks = "1 week", date_labels = "%b")
-
-write.csv(Eixample_NO2_week, "/Users/ione/Desktop/Project_AIR/Data/Eixample_NO2_week.csv", row.names = F)
-
-#I will prepare data for Tableau, that includes weather:
-
-
-#15.How are public transport strikes affecting to pollution?
-#16.How are taxi strikes affecting to pollution?
-#17.Is a BCN football match affecting to pollution?
-#18.How is air traffic influencing pollution?
-#19.How is port activity influencing pollution?
 
 
 
