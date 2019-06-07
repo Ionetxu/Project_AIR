@@ -183,8 +183,8 @@ summary(Air_NO2_PM10)
 head(Air_NO2_PM10)
 
 View(Air_NO2_PM10)
-write.csv(Air_NO2_PM10, "/Users/ione/Desktop/Project_AIR/Data/Air_NO2_PM10.csv", row.names = F)
+#write.csv(Air_NO2_PM10, "/Users/ione/Desktop/Project_AIR/Data/Air_NO2_PM10.csv", row.names = F)
 Air_NO2_PM10_weather <- merge(Air_NO2_PM10,Weather_bcn, by ="dt")
 summary(Air_NO2_PM10_weather)
-write.csv(Air_NO2_PM10_weather, "/Users/ione/Desktop/Project_AIR/Data/Air_NO2_PM10_weather.csv", row.names = F)
+#write.csv(Air_NO2_PM10_weather, "/Users/ione/Desktop/Project_AIR/Data/Air_NO2_PM10_weather.csv", row.names = F)
 
