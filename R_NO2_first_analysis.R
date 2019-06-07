@@ -413,7 +413,7 @@ Eixample_NO2_2018_09 <- Eixample_NO2_2018_09 %>% mutate(imp_2018_09_NO2_Eixample
 plotNA.imputations(x.withNA = Eixample_NO2_2014_2018_ts, x.withImputations = imp_2014_2018_NO2_Eixample_intp)
 
 #Dataframes:
-write.csv(Eixample_NO2_2018, "/Users/ione/Desktop/Project_AIR/Data/Eixample_NO2_2018.csv", row.names = F)
-write.csv(Eixample_NO2_2014_2018, "/Users/ione/Desktop/Project_AIR/Data/Eixample_NO2_2014_2018.csv", row.names = F)
-write.csv(Eixample_NO2_2018_09, "/Users/ione/Desktop/Project_AIR/Data/Eixample_NO2_2018_09.csv", row.names = F)
-write.csv(Eixample_NO2, "/Users/ione/Desktop/Project_AIR/Data/Eixample_NO2.csv", row.names = F)
+#write.csv(Eixample_NO2_2018, "/Users/ione/Desktop/Project_AIR/Data/Eixample_NO2_2018.csv", row.names = F)
+#write.csv(Eixample_NO2_2014_2018, "/Users/ione/Desktop/Project_AIR/Data/Eixample_NO2_2014_2018.csv", row.names = F)
+#write.csv(Eixample_NO2_2018_09, "/Users/ione/Desktop/Project_AIR/Data/Eixample_NO2_2018_09.csv", row.names = F)
+#write.csv(Eixample_NO2, "/Users/ione/Desktop/Project_AIR/Data/Eixample_NO2.csv", row.names = F)
