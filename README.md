@@ -37,7 +37,7 @@ The scripts in R and python notebook, as well as visualizations done in Tableau 
 - "Forecasting_models.R"
 - "Project_air.tbwc"
 -  Rmarkdown file "Index.rmd" that includes all the R coding and more detailed explanation of the project. 
--  "BCN_Air_Quality.pdf" as a memory of the project generated from R studio. 
+-  "BCN_Air_Quality_Analysis.pdf" as a memory of the project generated from R studio. 
 -  HTML site in Github Pages (https://ionetxu.github.io/). Please note, that image links to the graphs are not correctly updated, and consequently do not appear. 
 
 # Data
