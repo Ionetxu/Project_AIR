@@ -37,7 +37,7 @@ The scripts in R and python notebook, as well as visualizations done in Tableau 
 - "Forecasting_models.R"
 - "Project_air.tbwc"
 -  Rmarkdown file "Index.rmd" that includes all the R coding and more detailed explanation of the project. 
--  Document in PDF that as a memory of the project generated from "Index.rmd".
+-  Document in PDF as a memory of the project generated from "Index.rmd".
 -  HTML site in Github Pages (https://ionetxu.github.io/), which at the moment it's in work in progress as for some reason images are not visible.
 
 # Data
@@ -48,5 +48,5 @@ You can download all the [data](https://drive.google.com/file/d/1xmwf6u5mLPZQ0Xi
  
 - To run the Jupyter notebook, Python is a requirement (Python 3.3 or greater, or Python 2.7).
 - To run R scripts, I recommnend installing [R studio](https://www.rstudio.com/products/rstudio/download/).
-- To open the Tableau visualizations, please download [Tableau](https://www.tableau.com/)
+- To open the Tableau visualizations, please download [Tableau](https://www.tableau.com/).
 
