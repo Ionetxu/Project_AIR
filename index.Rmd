@@ -1,0 +1,1401 @@
+--- 
+title: "Air pollution in Barcelona"
+author: "Jone Lerchundi"
+date: "`r Sys.Date()`"
+output:
+  bookdown::html: default
+  #bookdown::gitbook: default
+site: bookdown::bookdown_site
+#github-repo: rstudio/bookdown-demo
+#site: bookdown::bookdown_site
+description: "This is my final thesis for my Masters in Data Science about pollution in Barcelona."
+---
+
+# Preface {-}
+
+ > “It is a capital mistake to theorize before one has data.” Sherlock Holmes, “A Study in Scarlett” (Arthur Conan Doyle)
+ 
+My name is Jone Lerchundi and I have worked as a BI consultant for more than 8 years helping companies to understand and leverage useful insights from data. Following my passion for data, I have recently studied a [Masters in Data Science](https://kschool.com/cursos/master-en-data-science-barcelona/) (13th promotion) at Kschool with the idea of expanding my skills and learning new tools and ideas that data science offers to better understand, capture and explain stories from data.
+
+This thesis has been written as a final project for my Masters in Data Science, but it is also a personal project as I am committed to also using my analytical skills to fight the current climate and environmental  emergency that we are facing. This is a work in progress project and my intention is to continue getting useful insights and information and share them for further conciousness.
+
+I am still learning so if you see anything wrong in my code or my assumptions, or you have any questions or new ideas that can help with this project, please don't hesitate to contact me, I will be more than happy to hear from you. 
+
+You can find me in my [Linkedin profile](www.linkedin.com/in/jonelerchundi). 
+
+# Introduction {#intro}
+
+##Motivation
+
+Air pollution is a silent, sometimes invisible, killler that is responsible for the premature death of 7 million people each year. In fact, 91% of the world population live in places that exceeds the air quality limits set by the World Health Organization (WHO), meaning that more than 6 billion people, one-third of them children, are regularly inhaling air so polluted that it puts their life, health and well-being at risk.
+
+And yet, this pandemic doesn't receive enough attention as these deaths are not as dramatic or fast-acting as those caused by other disasters or epidemics.
+
+While living in Seoul, South Korea, for almost four years, I experienced living with highly polluted air. It's not possible to avoid breathing the contaminants are present in the air, and I had to constantly assess the air quality when outside my home, especially when I became a mother. Under these circumstances, trustable information is key and becomes essential to live your daily life safely.
+
+After moving to Barcelona, I had the urge to understand what was I breathing, so I decided to do some more research of the air pollution in my new city. This thesis is the result of my research, and is trying to answer my questions, as a citizen and as a mother that want to protect my kids from bad quality air.
+
+Air pollution is a topic that citizens in Barcelona are starting to see as a problem, but I feel it still needs much more visibility given its impact in people's lifes.
+
+Local administration has also started to implement new politics to reduce pollution, like for example  establishing a Low emission zone [LEZ](https://ajuntament.barcelona.cat/qualitataire/en) where restrictions on the use of the most polluting vehicles are gradually being introduced.
+
+Although Barcelona is on the coast and it has a geographical advantage to clean the air, it is the city with the highest vehicle density in Europe (double that of Madrid), and relative to other dense cities in Europe, Barcelona has few green or permeable surfaces. Residents have access to just 2.7 square meters of green space per resident, well under the World Health Organization’s recommendation of 9 square meters. 
+
+##Scope
+
+In this project, I have three main objectives:
+
+- To understand the pollution trends, drivers and additional insights.
+- Create a forecasting model to anticipate pollution episodes. 
+- Conduct analysis and create visualizations by leveraging Tableau. 
+
+
+## Approach
+
+The project has been elaborated by using:
+
+- Initial data preparation with Python in Jupyter notebook. 
+- R Studio for data cleaning,preparation, exploration and forecasting.
+- Tableau for additional data analysis and communication of insights.
+- Github for version control.
+- Google drive to store the data.
+
+The list of scripts and all the coding, as well as visualizations done in Tableau are hosted in Github [here](https://github.com/Ionetxu/Project_AIR). Please execute the scripts and notebooks in the following order:
+
+- "Python_initial_analysis.ipynb"
+- "R_NO2_first_analysis.R"
+- "R_PM10_first_analysis.R"
+- "Data_exploration.R"
+- "Forecasting_models.R"
+- "Project_air.tbwc"
+
+You can download all the [data](https://drive.google.com/file/d/1xmwf6u5mLPZQ0XiBu7RRd33KAPkHuCAQ/view?usp=sharing) here. Just download the "Archive.zip" file to get the datasets. 
+
+# Data cleaning and gathering
+## Data
+
+The datasets I have used for this project are:
+
+- Pollution in Barcelona since 1991 (source:Generalitat de Catalunya).
+- Weather conditions in Barcelona city (source:Servei Metereologic de Catalunya).
+- Hospitalizations due to respiratory and heart problems in Barcelona (source:Observatori del Sistema de Salut de Catalunya).
+
+You can find all the datasets [here](https://drive.google.com/file/d/1xmwf6u5mLPZQ0XiBu7RRd33KAPkHuCAQ/view?usp=sharing)
+
+### Pollution
+
+The "Secció d’Immissions" from Servei de Vigilància i Control de l’Aire department of Generalitat de Catalunya, gave me access to the pollution historical data. 
+
+The dataset contains all air quality measurements performed in an hourly manner for multiple pollutants, and in several stations in all Catalunya since 1991. 
+
+Given the size of the file, I have done the initial analysis of the data in Python using Jupyter notebook, in order to subset the data in smaller datasets and then perform exploratory analysis of  the data with R Studio. You can check the initial analysis in the jupyter notebook  ["Python_initial_analysis.ipynb"](https://github.com/Ionetxu/Project_AIR/blob/master/Python_initial_analysis.ipynb).
+
+The initial dataset is a table with 5,154,117 rows and 70 columns, as the hourly observation values for each station are written as column values. To subset the dataset in smaller ones, I have first filtered the data for stations only in the city of Barcelona, and then filtered the pollutants I'm most interested in, which are NO2 and PM10. After melting the data to have one column for each pollutant concentration value only, I have written smaller datasets which I will analyze in R. 
+
+I will not to pursue analyzing the pollutant PM2.5 as there are only observations between 2002 and 2005, and there is no hourly measurements of PM2.5 currently. 
+
+This is really unfortunate as PM2.5, the particulate matter with a diameter of less than 2.5 micrometers, are of biggest concern in other cities as they are linked to premature death from heart and lung disease. Since they are so small, they tend to stay longer in the air (they can stay in the air for days or weeks) than heavier particles, with increased chance of humans inhaling them into the bodies. And because they are so small, they can penetrate deep into the lungs and even enter the circulatory system. 
+
+PM10 are the coarse particles that are between 2.5 and 10 micrometers.These particles can also penetrate deep into the lungs and can cause multiple respiratory issues.
+
+Nitrogen Dioxide (NO2) is one of a group of highly reactive gases known as oxides of nitrogen or nitrogen oxides (NOx). NO2 primarily gets in the air from the burning of fuel. NO2 forms from emissions from cars, trucks and buses, power plants, and off-road equipment.
+
+Breathing air with a high concentration of NO2 can irritate airways in the human respiratory system. Such exposures over short periods can aggravate respiratory diseases, particularly asthma, leading to respiratory symptoms (such as coughing, wheezing or difficulty breathing), hospital admissions and visits to emergency rooms. Longer exposures to elevated concentrations of NO2 may contribute to the development of asthma and potentially increase susceptibility to respiratory infections. People with asthma, as well as children and the elderly are generally at greater risk for the health effects of NO2.
+
+According to the dataset there are 11 stations in the city of Barcelona. 
+
+- St.Gervasi
+- Poblenou
+- Sagrera
+- Sants
+- Eixample
+- Gracia-Sant Gervasi
+- Ciutatella
+- Torre Girona
+- Parc Vall Hebron
+- Palau Reial
+- Observatori Fabra
+
+Some of them are not currently working like St. Gervasi or Sagrera. Note that my main analysis has focused in Eixample data, as it's one of the most polluted and centric station in the city of Barcelona.
+
+### Weather data
+I have sourced meterological data in Barcelona from Servei Metereologic de Catalunya. The dataset includes data from 2014 to 2019 with half hourly observations from multiple measuring stations in the city. I have chosen the station in the neighborhood of Raval for my analysis, due to its proximity with Eixample station and to be able to compare the data better. The multiple variables in the dataset are related to temperature, atmospheric presure, precipitation, average humidity,and wind speed and direction. 
+
+
+### Hospitalizations in Barcelona
+Observatori del Sistema de Salut de Catalunya provided me an excel file with the number of daily hospitalizations due to respiratory and heart issues from 2014 to end of 2017 in the city of Barcelona. I will use this data to see how it's relating to NO2 and PM10 pollutants and their correlation levels. 
+
+## Initial data cleansing and analysis
+
+You can find this R script here [R_NO2_first_analysis.R](https://github.com/Ionetxu/Project_AIR). 
+
+I start by loading the data related to pollutant NO2 and renaming the features of the dataset. Please load the file "airNO2.csv". 
+
+```{r , warning= FALSE, message= FALSE}
+library(readr)
+library(dplyr)
+library(tidyr)
+library(purrr)
+library(lubridate)
+library(ggplot2)
+library(stringr)
+library(knitr)
+library(xts)
+library(zoo)
+library(gridExtra)
+library(fpp2)
+library(RcppRoll)
+library(kableExtra)
+library(imputeTS)
+airNO2 <- read_csv('/Users/ione/Desktop/Project_AIR/data/airNO2.csv')
+
+```
+
+Giving new column names by using dplyr:
+```{r , warning= FALSE, message= FALSE}
+airNO2 <- airNO2 %>% dplyr::rename(measurement_code='CODI MESURAMENT',
+                                    pollutant='CONTAMINANT',
+                                    station_code = 'CODI ESTACIÓ',
+                                    station_name = 'NOM ESTACIÓ',
+                                    latitude = 'LATITUD',
+                                    longitude = 'LONGITUD',
+                                    unit = 'UNITATS',
+                                    year = 'ANY',
+                                    month = 'MES',
+                                    day = 'DIA',
+                                    dt = 'DATA',
+                                    time = 'HORA',
+                                    value = 'VALOR')
+```
+
+I am going to change the station names and will fix typos ( there are two different names for the same station code 44, "Barcelona (Gràcia - Sant Gervasi)"" and  "Barcelona (Gracia - Sant Gervasi)".
+Therefore I will create a station dictionary with more convenient station names.
+
+```{r , warning= FALSE, message= FALSE}
+station_dict <- data.frame(
+  station_code = c(3,4,39,42,43,44,50,54,56,57,58),
+  station_alias = c("St.Gervasi", "Poblenou", "Sagrera","Sants", "Eixample",
+                    "Gracia-Sant Gervasi","Ciutatella","Torre Girona",
+                    "Parc Vall Hebron","Palau Reial",
+                    "Observatori Fabra")
+)
+```
+
+Next I will join the station dictionary to the airNO2 dataframe with the new station names:
+
+```{r , warning= FALSE, message= FALSE}
+airNO2 <- airNO2 %>% left_join(station_dict, by = 'station_code')
+```
+
+Next I will convert "Time"" column in a better format concatenating minutes and seconds to have a datetime column.
+I will first take out a space of time column and make it hms format.
+```{r , warning= FALSE, message= FALSE}
+
+airNO2$time <- paste(airNO2$time,":00:00",sep = "")
+```
+
+Going to include the time with the date in a new column dt using lubridate library:
+```{r , warning= FALSE, message= FALSE}
+airNO2$dt <- with(airNO2, ymd(airNO2$dt) + hms(time))
+```
+
+Convert into POSIXct because Dplyer doesnt support POSIXlt
+```{r , warning= FALSE, message= FALSE}
+airNO2$dt <- as.POSIXct(airNO2$dt)
+head(airNO2$dt)
+```
+We drop columns that we don't need - measurement-code and station name & sort columns
+
+```{r warning= FALSE, message= FALSE}
+airNO2_1 <- dplyr::select(airNO2, -c( "station_name", "time"))
+summary(airNO2_1)
+```
+
+Let's do an initial analysis of the data by plotting the data by station:
+
+```{r warning= FALSE, message= FALSE}
+St_gervasi_NO2 <- airNO2_1 %>% filter(station_code == 3)
+Poblenou_NO2 <- airNO2_1 %>% filter(station_code == 4)
+Sagrera_NO2 <- airNO2_1 %>% filter(station_code == 39)
+Sants_NO2 <- airNO2_1 %>% filter(station_code == 42)
+Eixample_NO2 <- airNO2_1 %>% filter(station_code == 43)
+Gracia_NO2 <- airNO2_1 %>% filter(station_code == 44)
+Ciutatella_NO2 <- airNO2_1 %>% filter(station_code == 50)
+Torre_girona_NO2 <- airNO2_1 %>% filter(station_code == 54)
+Vall_hebron_NO2 <- airNO2_1 %>% filter(station_code == 56)
+Palau_reial_NO2 <- airNO2_1 %>% filter(station_code == 57)
+Observ_fabra_NO2 <- airNO2_1 %>% filter(station_code == 58)
+```
+
+
+For Poblenou station:
+```{r warning= FALSE, message= FALSE}
+Poblenou_NO2_plt <- ggplot(Poblenou_NO2, aes(x = as.Date(dt), y = value)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(color = "grey", alpha = 0.2) +
+  geom_hline(yintercept = 200, linetype="dashed", colour = "red")+
+  geom_hline(yintercept = 40, linetype="dashed", colour = "red")+
+  scale_x_date(breaks='2 years', date_labels = "%Y") +
+  labs( x = "Time", y = "NO2 (µg/m3)", title = "NO2(µg/m3) evolution - Poblenou")
+Poblenou_NO2_plt
+```
+
+We can observe that in Poblenou there is data from 1991 to 2019, but there is no data for 2013.This is common to all stations.
+
+Also, I have included two red dotted lines, indicating EU air quality standards for [NO2](http://ec.europa.eu/environment/air/quality/standards.htm):
+
+- Hourly limit for NO2 of 200 µg/m3 (18 Permitted exceedences each year).
+- Average yearly limit of 40 µg/m3.
+
+In an initial look, it seems that all data are complying with the hourly limit of 200 µg/m3 in the recent years, but there are multiple values above the 200 µg/m3 mark in the initial years. It's positive, it seems like the pollution has improved since early 1990s. The average concentration of NO2 is right on the limit of 40 µg/m3. 
+
+I am going to plot the data for Eixample:
+```{r warning= FALSE, message= FALSE}
+Eixample_NO2_plt <- ggplot(Eixample_NO2, aes(x = dt, y = value)) +
+  geom_point(alpha = 0.5) +
+  geom_hline(yintercept = 200, linetype="dashed", colour = "red")+
+  geom_hline(yintercept = 40, linetype="dashed", colour = "red")+
+  geom_smooth(color = "grey", alpha = 0.2) +
+  scale_x_datetime(breaks='2 years',date_labels = "%Y") +
+  labs( x = "Year", y = "NO2 (µg/m3)", title = "NO2(µg/m3) - NO2 evolution in Eixample station")
+Eixample_NO2_plt
+```
+For Eixample we have data from 1996 to 2019, but there is no data from 2009 to 2011, and for 2013. There are multiple values above the 200 µg/m3 mark between 1996 and 2012, but then the pollution peaks improve from 2014 to 2019. This is positive news. But the average curve is above the yearly average quality standard.  
+
+Now I want to see the data more closely, so I will repeat the plot for Eixample but subsetting the data to just a week:
+I will define Start and end times for the subset as POSICXct objects:
+```{r warning= FALSE, message= FALSE}
+startTime <- as.POSIXct("2019-03-01 10:00:00",tz="UTC")
+endTime <- as.POSIXct("2019-03-8 10:00:00",tz="UTC")
+```
+I will create a start and end time R object:
+```{r warning= FALSE, message= FALSE}
+start.end <- c(startTime,endTime)
+start.end
+```
+
+I have to format with time zone as otherwise ggplot2 doesnt deal with original date format
+```{r warning= FALSE, message= FALSE}
+date_format_tz <- function(format = "%Y-%m-%d", tz = "UTC") {
+  function(x) format(x, format, tz=tz)
+}
+```
+
+I am now going to plot just for Eixample:
+```{r warning= FALSE, message= FALSE}
+Eixample_NO2_subset_plt <- ggplot(Eixample_NO2, aes(x = as.POSIXct(dt), y = value)) +
+  geom_line(alpha = 0.5) +
+  geom_hline(yintercept = 40, linetype="dashed", colour = "red")+
+  labs( x = "Time", y = "NO2 (µg/m3)", title = "NO2(µg/m3) - NO2 levels in March 2019 in Eixample")+
+  geom_smooth(color = "grey", alpha = 0.2) +
+  coord_cartesian( ylim = c(0, 150))+
+  scale_x_datetime(limits=start.end,breaks='24 hours',labels = date_format_tz( "%b\n%d"))
+
+Eixample_NO2_subset_plt
+```
+
+This is a big finding, as I observe that there are no measurements taken between 1am and 10am systematically in any station, avoiding rush hour in the morning. This is bad news as we are not measuring the morning pollution peak due to morning rush hour.
+
+This also means that I'll have big number of not assigned values, difficulting a good forecasting model.
+
+I have done similar cleansing and analysis for pollutant PM10 data. Please check the code in this R script in [PM10 R_PM10_first_analysis.R](https://github.com/Ionetxu/Project_AIR).
+
+After seeing the plots for PM10 for each and all stations, I have observed that there are two stations that are not capturing PM10 at all, which are Ciutatella and Vall Hebron, and other stations in which PM10 has been capturing on and off. 
+
+Also similarly to NO2, the PM10 data has been only measured during the day between 10am and midnight 12am, missing all values between 1am and 10am (9 observations).
+
+### Missing values management - package imputeTS
+
+In order to deal with the NA values I will use the imputeTS library, which deals with missing values in univariate time series using multiple imputation algorithms like 'Mean', 'LOCF', 'Interpolation', 'Moving Average', 'Seasonal Decomposition', 'Kalman Smoothing on Structural Time Series models', 'Kalman Smoothing on ARIMA models'. It also provides useful tools to visualize and understand the NA-s distribution. 
+
+I am going to create a TS object with assumption frequency= 24 (hourly measurements with 1 day seasonality).
+First I will try just a month, 20014 January, to test and see the results:
+
+```{r warning= FALSE, message= FALSE}
+Poblenou_NO2_2014_1 <- Poblenou_NO2 %>% filter(year ==2014 & month == 1)
+Poblenou_NO2_2014_ts_1 <- ts(Poblenou_NO2_2014_1[,11], start = c(2014, 1), frequency = 24)
+```
+Now I will analyze the NA-s with a distribution bar plot:
+```{r warning= FALSE, message= FALSE}
+plotNA.distributionBar(Poblenou_NO2_2014_ts_1, breaks = 31)
+```
+Gapsize tells the distribution of the gapsizes in a time series:
+```{r warning= FALSE, message= FALSE}
+plotNA.gapsize(Poblenou_NO2_2014_ts_1)
+```
+
+We can also see some stats about the NA-s. 
+
+```{r warning= FALSE, message= FALSE}
+statsNA(Poblenou_NO2_2014_ts_1)
+```
+We observe that the NA gap that repeats more is the gap of size 9, which are the gaps related to the absence of meditions from midnight to 10am.
+
+Not having data to test makes it difficult to choose a particular algorithm versus another, but I will try some and see how they look.
+
+I will impute NA values by values by mean algorithm:
+```{r warning= FALSE, message= FALSE}
+imp_2014_1_NO2_Poblenou_mean <- na.mean(Poblenou_NO2_2014_ts_1)
+```
+Plot of data with NA-s vs data with imputations with mean values:
+```{r warning= FALSE, message= FALSE}
+plotNA.imputations(x.withNA = Poblenou_NO2_2014_ts_1, x.withImputations = imp_2014_1_NO2_Poblenou_mean)
+```
+
+I will impute NA values by Weighted Moving Average algorithm:
+```{r warning= FALSE, message= FALSE}
+imp_2014_1_NO2_Poblenou_ma <- na.ma(Poblenou_NO2_2014_ts_1)
+```
+
+Plot of data with NA-s vs data with imputations with Weighted Moving Average values:
+```{r warning= FALSE, message= FALSE}
+plotNA.imputations(x.withNA = Poblenou_NO2_2014_ts_1, x.withImputations = imp_2014_1_NO2_Poblenou_ma)
+```
+
+I will impute NA values by Last Observation Carried Forward algorithm:
+```{r warning= FALSE, message= FALSE}
+imp_2014_1_NO2_Poblenou_locf <- na.locf(Poblenou_NO2_2014_ts_1)
+```
+
+Plot of data with NA-s vs data with imputations by Last Observation Carried Forward algorithm:
+```{r warning= FALSE, message= FALSE}
+plotNA.imputations(x.withNA = Poblenou_NO2_2014_ts_1, x.withImputations = imp_2014_1_NO2_Poblenou_locf)
+```
+
+I will impute NA values by kalman algorithm:
+```{r warning= FALSE, message= FALSE}
+imp_2014_1_NO2_Poblenou_kalman <- na.kalman(Poblenou_NO2_2014_ts_1)
+```
+
+Plot of data with NA-s vs data with imputations with kalman algorithm:
+```{r warning= FALSE, message= FALSE}
+plotNA.imputations(x.withNA = Poblenou_NO2_2014_ts_1, x.withImputations = imp_2014_1_NO2_Poblenou_kalman)
+```
+Some imputed values are negative, which is not a good outcome, so I will discard this method.
+
+I will impute NA values by interpolation algorithm:
+```{r warning= FALSE, message= FALSE}
+imp_2014_1_NO2_Poblenou_intp <- na.interpolation(Poblenou_NO2_2014_ts_1)
+```
+
+Plot of data with NA-s vs data with imputations with interpolation algorithm:
+```{r warning= FALSE, message= FALSE}
+plotNA.imputations(x.withNA = Poblenou_NO2_2014_ts_1, x.withImputations = imp_2014_1_NO2_Poblenou_intp)
+```
+
+I am going to choose interpolation algorithm to impute values to the data that I will use for forecasting purposes and the exploration analysis. 
+
+# Data exploration
+
+I want to know more about the pollution in Barcelona and so in this chapter I will try to get more insights, and see what I discover from the data.  There are multiple questions I'm curious about and I am going to try find answers by using some additional datasets like weather, health and calendar dates. 
+You can find the R script in [here](https://github.com/Ionetxu/Project_AIR/blob/master/Data_Exploration.R)
+
+## General exploration
+Let's start by loading the data for NO2 and PM10 pollutants in Eixample from 2014 to 2018. 
+Please load files "Eixample_NO2_2014_2018.csv" and "Eixample_PM10.csv". 
+```{r warning= FALSE, message= FALSE}
+library(readr)
+library(dplyr)
+library(tidyr)
+library(purrr)
+library(lubridate)
+library(ggplot2)
+library(stringr)
+library(knitr)
+library(xts)
+library(zoo)
+library(gridExtra)
+library(fpp2)
+library(RcppRoll)
+library(kableExtra)
+library(imputeTS)
+library(ggfortify)
+library(urca)
+library(forecast)
+library(hydroTSM)
+library(tidyquant)
+library(reshape)
+library(ggpubr)
+library(openair)
+library(data.table)
+require('data.table')
+library(robust)
+library(corrplot)
+Eixample_NO2 <- read_csv('/Users/ione/Desktop/Project_AIR/data/Eixample_NO2_2014_2018.csv')
+Eixample_PM10 <- read_csv('/Users/ione/Desktop/Project_AIR/data/Eixample_PM10.csv')
+
+```
+
+I will rename columns for NO2 and PM10.
+```{r warning= FALSE, message= FALSE}
+Eixample_NO2 <- Eixample_NO2 %>% dplyr::rename(NO2='imp_2014_2018_NO2_Eixample_intp')
+Eixample_PM10 <- Eixample_PM10 %>% dplyr::rename(PM10='imp_2014_2018_PM10_Eixample_intp')
+```
+
+I am going to calculate the daily value for the average, median, min and max of both pollutants NO2 and PM10 in Eixample from 2014 to 2018.
+```{r warning= FALSE, message= FALSE}
+stat_fun <- function(x) c(min = min(x), max = max(x), mean = mean(x), median = median(x))
+Eixample_NO2_day <- Eixample_NO2 %>%
+  tq_transmute(select     = NO2,
+               mutate_fun = apply.daily,
+               FUN        = stat_fun)
+summary(Eixample_NO2_day)
+```
+
+```{r warning= FALSE, message= FALSE}
+Eixample_PM10_day <- Eixample_PM10 %>%
+  tq_transmute(select     = PM10,
+               mutate_fun = apply.daily,
+               FUN        = stat_fun)
+summary(Eixample_PM10_day)
+```
+
+Let's plot the daily average of NO2 in Eixample:
+```{r warning= FALSE, message= FALSE}
+ggplot(Eixample_NO2_day, aes(x = as.Date(dt), y = mean)) +
+  geom_line(alpha = 0.5) +
+  geom_smooth(color = "grey", alpha = 0.2) +
+  scale_x_date(breaks='1 year') +
+  labs( x = "Time", y = "NO2 (µg/m3)", title = " Eixample - NO2 (µg/m3) daily average")
+```
+
+The trend is not negative, even slightly positive, which means the NO2 pollution has not improved in the last five years. Seasonality seems to be yearly.
+
+Plot for daily average of PM10:
+```{r warning= FALSE, message= FALSE}
+ggplot(Eixample_PM10_day, aes(x = as.Date(dt), y = mean)) +
+  geom_line(alpha = 0.5) +
+  geom_smooth(color = "grey", alpha = 0.2) +
+  scale_x_date(breaks='1 year') +
+  labs( x = "Time", y = "PM10 (µg/m3)", title = "Eixample - PM10 (µg/m3) daily average")
+```
+
+There are many outliers and I will look at them in a moment. 
+The trend also seems to be quite flat, PM10 concentrations have not improved much in the last five years. 
+
+Monthly median, average, max and minimum for both NO2 and PM10.
+```{r warning= FALSE, message= FALSE}
+Eixample_NO2_month <- Eixample_NO2 %>%
+  tq_transmute(select     = NO2,
+               mutate_fun = apply.monthly,
+               FUN        = stat_fun)
+summary(Eixample_NO2_month)
+```
+
+```{r warning= FALSE, message= FALSE}
+Eixample_PM10_month <- Eixample_PM10 %>%
+  tq_transmute(select     = PM10,
+               mutate_fun = apply.monthly,
+               FUN        = stat_fun)
+summary(Eixample_PM10_month)
+```
+
+I will plot the monthly values.
+```{r warning= FALSE, message= FALSE}
+ggplot( data =Eixample_NO2_month , aes(x = as.Date(dt), y = mean)) +
+  geom_line(alpha = 0.5) +
+  labs( x = "Time", y = "NO2 (µg/m3)", title = "NO2(µg/m3) - Eixample NO2 monthly avg")+
+  geom_smooth(color = "grey", alpha = 0.2) +
+  scale_x_date(breaks='6 months', date_labels = "%m-%Y")
+```
+
+I see yearly seasonality and positive trend for NO2. 
+
+```{r warning= FALSE, message= FALSE}
+ggplot(data =Eixample_PM10_month ,aes(x = as.Date(dt), y = mean)) +
+  geom_line(alpha = 0.5) +
+  labs( x = "Time", y = "PM10 (µg/m3)", title = "Eixample PM10 monthly avg")+
+  geom_smooth(color = "grey", alpha = 0.2) +
+  scale_x_date(breaks='6 months', date_labels = "%m-%Y")
+```
+
+For PM10 the seasonality is not that evident, and there is not a clear trend neither. 
+
+Yearly mean, median, min and max for both PM10 and NO2.
+```{r warning= FALSE, message= FALSE}
+Eixample_NO2_year <- Eixample_NO2 %>%
+  tq_transmute(select     = NO2,
+               mutate_fun = apply.yearly,
+               FUN        = stat_fun)
+head(Eixample_NO2_year,5)
+```
+
+We can now see if NO2 is complying with EU air quality regulations:
+
+- Hourly limit for NO2 of 200 µg/m3 (18 Permitted exceedences each year).
+- Average yearly limit of 40 µg/m3.
+
+There is only one time that NO2 reching 200 µg/m3, so NO2 levels in Barcelona are complying with hourly limit.  
+But the average yearly limit of 40 µg/m3 has not been met in any year for the last five years, which is a violation of EU air quality regulations. 
+
+```{r warning= FALSE, message= FALSE}
+Eixample_PM10_year <- Eixample_PM10 %>%
+  tq_transmute(select     = PM10,
+               mutate_fun = apply.yearly,
+               FUN        = stat_fun)
+head(Eixample_PM10_year,5)
+```
+
+For PM10, the EU air quality regulations state that:
+
+- Daily concentration for PM10 of 50 µg/m3 (35 Permitted exceedences each year).
+- Average yearly limit of 40 µg/m3.
+
+PM10 average yearly limits are met every year, but I will check if the daily PM10 concentrations meet the EU air quality limits. 
+
+```{r warning= FALSE, message= FALSE}
+Eixample_PM10_day_2014 <- Eixample_PM10_day %>% filter( dt <= "2014-12-31")
+Eixample_PM10_day_2015 <- Eixample_PM10_day %>% filter( dt >= "2015-01-01" & dt <= "2015-12-31")
+Eixample_PM10_day_2016 <- Eixample_PM10_day %>% filter( dt >= "2016-01-01" & dt <= "2016-12-31")
+Eixample_PM10_day_2017 <- Eixample_PM10_day %>% filter( dt >= "2017-01-01" & dt <= "2017-12-31")
+Eixample_PM10_day_2018 <- Eixample_PM10_day %>% filter( dt >= "2018-01-01" & dt <= "2018-12-31")
+
+Eixample_PM10_day_2014 %>% summarize(n_cases = sum(Eixample_PM10_day_2014$mean >= 50))
+Eixample_PM10_day_2015 %>% summarize(n_cases = sum(Eixample_PM10_day_2015$mean >= 50))
+Eixample_PM10_day_2016 %>% summarize(n_cases = sum(Eixample_PM10_day_2016$mean >= 50))
+Eixample_PM10_day_2017 %>% summarize(n_cases = sum(Eixample_PM10_day_2017$mean >= 50))
+Eixample_PM10_day_2018 %>% summarize(n_cases = sum(Eixample_PM10_day_2018$mean >= 50))
+```
+
+There is no year with more than 35 cases with concentrations of PM10 higher than 50 µg/m3. Year 2015 had 33 cases but it's still complying the regulations.
+
+I am now going to analyze the outliers with extremely high PM10 values. 
+```{r warning= FALSE, message= FALSE}
+outliers <- Eixample_PM10_day[order(Eixample_PM10_day$max, decreasing = TRUE),]
+outliers
+```
+
+If we see the list of the maximum values, on the 24th of June, 2017 the maximum concentration measured was of 1167 µg/m3, when the legal limit daily concentration of PM10 is 50 µg/m3. 
+But positions 4,5,6,and 8, are also on the 24th June, which is the day of [Sant Joan](http://lameva.barcelona.cat/culturapopular/en/festivals-and-traditions/nit-de-sant-joan). 
+
+Sant Joan is often described by Catalans as the 'Nit del Foc' - meaning the 'Night of Fire'. The main aspect to the celebrations is fireworks, bonfires and firecrackers. Fireworks cause extensive air pollution in a short amount of time, leaving metal particles, dangerous toxins, harmful chemicals and smoke in the air for hours and days.
+
+Doing some research on this, I have surprisingly found out that fireworks have been banned in China  for Lunar New Year [celebrations](https://www.youtube.com/watch?v=PMUla2mnz_E) to avoid higher pollution. 
+Also in India, firecrackers have been partially banned for Diwali hindu [celebrations](https://www.youtube.com/watch?v=d8lZtiXbonI).
+
+Second highest value in the list, corresponds to 7th June 2015. This is when Barcelona FC won its 5th Champions League final, and celebrations surely included fireworks and firecrackers. 
+
+## Weather and pollution
+What is the relationship between weather and pollutants NO2 and PM10? How are pollutants affected by different weather components? Let's try to answer these questions.
+
+Let's load the data from Raval- zoo in Barcelona (EMA = X4). I'm going to use the weather data from
+Raval to compare it with pollution measured in Eixample due to proximity between both stations.
+Please load file "Jlerchundi_X4_14-19.csv". 
+```{r warning= FALSE, message= FALSE}
+Weather_bcn <- read_csv('/Users/ione/Desktop/Project_AIR/data/Jlerchundi_X4_14-19.csv')
+```
+
+Data column is in format "1/1/2014 1:00", and it's a character, so I'll change it to be same as dt in the pollution datasets and be able to join the data.
+
+```{r warning= FALSE, message= FALSE}
+Weather_bcn <- Weather_bcn %>% dplyr::rename(dt="DATA (T.U.)",
+                                             wd = "DV10",
+                                             ws = "VV10")
+
+Weather_bcn$dt <- parse_date_time(Weather_bcn$dt, "dmy HM", truncated = 3)
+head(Weather_bcn)
+```
+
+Now I will do the join between the weather and pollution data:
+
+```{r warning= FALSE, message= FALSE}
+Eixample_NO2_weather <- merge(Eixample_NO2,Weather_bcn,by="dt" )
+summary(Eixample_NO2_weather)
+```
+
+```{r warning= FALSE, message= FALSE}
+Eixample_PM10_weather <- merge(Eixample_PM10,Weather_bcn,by="dt" )
+summary(Eixample_PM10_weather)
+```
+
+In order to create a correlation matrix, I will only select the numeric variables.
+```{r warning= FALSE, message= FALSE}
+Eixample_NO2_weather_num_data <- Eixample_NO2_weather[, sapply(Eixample_NO2_weather, is.numeric)]
+```
+
+I will only choose the variables that are relevant for the correlation:
+```{r warning= FALSE, message= FALSE}
+Eixample_NO2_weather_cor <- dplyr::select(Eixample_NO2_weather_num_data, -c("station_code", "latitude", "longitude","year","month","day","value"))
+```
+
+I will see if we have NA values in the weather data, as I can't have any NA data to perform the correlation matrix.
+```{r warning= FALSE, message= FALSE}
+sum(is.na(Eixample_NO2_weather_cor))
+```
+
+I have 87 values that are NA, so I will remove them from the analysis. 
+
+```{r warning= FALSE, message= FALSE}
+Eixample_NO2_weather_cor_NA <-Eixample_NO2_weather_cor[complete.cases(Eixample_NO2_weather_cor), ]
+```
+
+Now I will calculate the correlation matrix with only numeric values and no NA values.
+```{r warning= FALSE, message= FALSE}
+cormat_NO2 <- round(cor(Eixample_NO2_weather_cor_NA),2)
+head(cormat_NO2)
+```
+
+Looking at the data, NO2 values have a negative correlation coefficient of -0.31 with wind speed (ws), -0.15 with wind direction (wd), and positive 0.2 with atmospheric pressure (P). 
+
+I will do the same with PM10 values:
+```{r warning= FALSE, message= FALSE}
+Eixample_PM10_weather_num_data <- Eixample_PM10_weather[, sapply(Eixample_PM10_weather, is.numeric)]
+Eixample_PM10_weather_cor <- dplyr::select(Eixample_PM10_weather_num_data, -c("station_code", "latitude", "longitude","year","month","day","value"))
+
+Eixample_PM10_weather_cor_NA <-Eixample_PM10_weather_cor[complete.cases(Eixample_PM10_weather_cor), ]
+cormat_PM10 <- round(cor(Eixample_PM10_weather_cor_NA),2)
+head(cormat_PM10)
+```
+
+PM10 is most correlated with average temperature(T), with positive coefficient of 0.19, and then with atmospheric pressure (P) with correlation coefficient of 0.10. PM10 is also correlated with wind direction with negative coefficient -0.12.
+
+The correlation matrix plot for relationship between NO2 and weather:
+```{r warning= FALSE, message= FALSE}
+corrplot(cormat_NO2, type="upper", order="hclust", tl.srt=45)
+```
+
+The correlation matrix plot for relationship between PM10 and weather:
+```{r warning= FALSE, message= FALSE}
+corrplot(cormat_PM10, type="upper",order="hclust", tl.srt=45)
+```
+
+I will plot the most correlated variables, the NO2 pollution with Atmospheric pressure.
+```{r warning= FALSE, message= FALSE}
+ggscatter(Eixample_NO2_weather_cor_NA, x = "NO2", y = "P",
+          add = "reg.line", conf.int = TRUE,
+          cor.coef = TRUE, cor.method = "pearson", alpha = 0.1,
+          xlab = "NO2 (µg/m3)", ylab = "Atmospheric pressure (hPa)", title = "NO2 vs P")
+```
+
+The higher the atmospheric pressure, the higher will be the NO2 concentration in the air. When there is anticyclone, winds are calmer therefore pollution is higher.
+
+Let'a analyze the relationship between NO2 levels and Wind speed.
+```{r warning= FALSE, message= FALSE}
+ggscatter(Eixample_NO2_weather_cor_NA, x = "NO2", y = "ws",
+          add = "reg.line", conf.int = TRUE,
+          cor.coef = TRUE, cor.method = "pearson", alpha = 0.1,
+          xlab = "NO2 (µg/m3)", ylab = "Wind speed (m/s)", title = "NO2 vs Wind speed")
+```
+
+The NO2 concentrations decrease with higher wind speeds. 
+
+For wind direction and NO2 relationship, I will use a windRose plot:
+
+```{r warning= FALSE, message= FALSE}
+windRose(Eixample_NO2_weather_cor_NA, ws = "ws", wd = "wd")
+```
+
+This plot tells us that the highest speed is normally NW direction winds, and 15% of the times the wind is SW. 
+```{r warning= FALSE, message= FALSE}
+percentileRose( mydata = Eixample_NO2_weather_cor_NA, wd = "wd", pollutant = "NO2", mean=TRUE, key.footer = "percentile")
+```
+
+According to this graph, NO2 pollution is lowest when the wind is NW direction and higher speed. 
+While when the wind is SE direction and low speed,the pollution is highest. 
+This makes sense I understand this looking at the geography of the city, where the ocean sits south east of the city, and the pollution can scape that direction when the wind is NW. But when the wind is SE, the mountains hold the smog on top of the city.
+
+I will do the same analysis for PM10. For PM10 the most influencing factor is Temperature.
+```{r warning= FALSE, message= FALSE}
+ggscatter(Eixample_PM10_weather_cor_NA, x = "PM10", y = "T",
+          add = "reg.line", conf.int = TRUE,
+          cor.coef = TRUE, cor.method = "pearson", alpha = 0.1,
+          xlab = "PM10 (µg/m3)", ylab = "Temperature (°C)", title = "PM10 and T relationship in Eixample") +
+          xlim(c(0,200)) #taking out outliers
+```
+
+```{r warning= FALSE, message= FALSE}
+ggscatter(Eixample_PM10_weather_cor_NA, x = "PM10", y = "P",
+          add = "reg.line", conf.int = TRUE,
+          cor.coef = TRUE, cor.method = "pearson", alpha = 0.1,
+          xlab = "PM10 (µg/m3)", ylab = "Pressure (hPa)", title = "PM10 and P relationship in Eixample") +
+  xlim(c(0,200)) #taking out outliers
+```
+
+PM10 concentrations are higher with higher temperature and atmospheric pressure. 
+
+Regarding wind direction and PM10:
+```{r warning= FALSE, message= FALSE}
+percentileRose( mydata = Eixample_PM10_weather_cor_NA, wd = "wd", pollutant = "PM10", mean=TRUE, key.footer = "percentile")
+```
+
+Very similar effect of the wind direction for NO2 and PM10. Pollution increases with SE wind direction and decreases with NW direction.
+
+## Health and pollution
+I will now try to see if there is any relationship between NO2 and PM10 concentrations and hospitalizations due to respiratory and cardiac issues. 
+I will load the dataset of hospitalizations due to respiratory issues first. The data is aggregated by diagnosis and CIM-9 code,and they are daily values registered in Barcelona city. 
+Please load file "Respiratory_2014-2017.csv".
+```{r warning= FALSE, message= FALSE}
+health_resp <- read_csv('/Users/ione/Desktop/Project_AIR/data/Respiratory_2014-2017.csv', locale = locale(encoding = "latin1"))
+```
+
+I will rename the column names:
+```{r warning= FALSE, message= FALSE}
+health_resp <- health_resp %>% dplyr::rename(day="dia",
+                                             month= "mes",
+                                             year= "any",
+                                             Diagnosis = "Diagnòstic Principal",
+                                             Hospitalizations = "Contactes d'hospitalització d'aguts (altes AH)")
+head(health_resp)
+```
+
+Month names are strings in catalan and the system can't parse them into date format.
+I will translate the month names and transform into date format:
+```{r warning= FALSE, message= FALSE}
+health_resp$month[health_resp$month == "Gener"] <- "January"
+health_resp$month[health_resp$month == "Febrer"] <- "February"
+health_resp$month[health_resp$month == "Març"] <- "March"
+health_resp$month[health_resp$month == "Abril"] <- "April"
+health_resp$month[health_resp$month == "Maig"] <- "May"
+health_resp$month[health_resp$month == "Juny"] <- "June"
+health_resp$month[health_resp$month == "Juliol"] <- "July"
+health_resp$month[health_resp$month == "Agost"] <- "August"
+health_resp$month[health_resp$month == "Setembre"] <- "September"
+health_resp$month[health_resp$month == "Octubre"] <- "October"
+health_resp$month[health_resp$month == "Novembre"] <- "November"
+health_resp$month[health_resp$month == "Desembre"] <- "December"
+```
+
+I will transform the year, month, day columns in a date format column called dt similarly to NO2 and PM10 dataframes. 
+```{r warning= FALSE, message= FALSE}
+health_resp$dt <- paste(health_resp$year, health_resp$month, health_resp$day, sep="-") %>% ymd() %>% as.Date()
+Eixample_NO2_day$dt <- as.Date(Eixample_NO2_day$dt)
+Eixample_PM10_day$dt <- as.Date(Eixample_PM10_day$dt)
+```
+
+We only have health data from 2014 to 2018 so I will limit the pollution data accordingly.
+```{r warning= FALSE, message= FALSE}
+Eixample_NO2_day <- Eixample_NO2_day %>% filter ( dt <= "2017-12-31")
+Eixample_PM10_day <- Eixample_PM10_day %>% filter ( dt <= "2017-12-31")
+```
+
+I will now perform the joins of the NO2 and PM10 with weather data:
+```{r warning= FALSE, message= FALSE}
+Eixample_NO2_resp <- merge(Eixample_NO2_day,health_resp,by="dt" )
+Eixample_PM10_resp <- merge(Eixample_PM10_day,health_resp,by="dt" )
+```
+
+I am going to transform the data to perform correlation analysis. I need to aggregate the data
+by dt,but I need different aggregation types for each column: average for NO2/PM10 and summmation for hospitalizations count. 
+```{r warning= FALSE, message= FALSE}
+df_NO2 <- data.table(Eixample_NO2_resp)
+df.NO2_resp <- df_NO2[, list(NO2=mean(mean), Hospitalizations_resp=sum(Hospitalizations)),
+             by=dt]
+df.NO2_resp
+```
+
+```{r warning= FALSE, message= FALSE}
+df_PM10 <- data.table(Eixample_PM10_resp)
+df_PM10_resp <- df_PM10[, list(PM10=mean(mean), Hospitalizations_resp=sum(Hospitalizations)),
+             by=dt]
+df_PM10_resp
+```
+
+I am going to do a normality test for pearson correlation tests:
+Shapiro-Wilk normality test for NO2
+```{r warning= FALSE, message= FALSE}
+shapiro.test(df.NO2_resp$NO2) 
+```
+
+Shapiro-Wilk normality test for Hospitalizations
+```{r warning= FALSE, message= FALSE}
+shapiro.test(df.NO2_resp$Hospitalizations_resp) 
+```
+
+Pearson correlation test between NO2 and hospitalizations due to respiratory issues:
+```{r warning= FALSE, message= FALSE}
+cor_test1 <- cor.test(df.NO2_resp$NO2, df.NO2_resp$Hospitalizations_resp,
+                method = "pearson")
+cor_test1
+```
+
+Correlation coefficient is around 0.42 which is a considerable correlation. Plot NO2 vs hospitalizations:
+```{r warning= FALSE, message= FALSE}
+ggscatter(df.NO2_resp, x = "NO2", y = "Hospitalizations_resp",
+          add = "reg.line", conf.int = TRUE,
+          cor.coef = TRUE, cor.method = "pearson", alpha = 0.1,
+          xlab = "NO2 (µg/m3)", ylab = "Hospitalizations", title = "NO2 vs hospitalizations respiratory issues")
+```
+
+I will plot NO2 and hospitalizations with the temporal component:
+
+```{r warning= FALSE, message= FALSE}
+ggplot(df.NO2_resp, aes(x =dt)) +
+  geom_line(aes(y = NO2, colour = "NO2")) +
+  coord_cartesian(xlim=c(as.Date("2014-01-01"),as.Date("2014-01-16"))) +
+  geom_line(aes(y = Hospitalizations_resp, colour = "Hospitalizations")) +
+  labs( x = "Time", y = "Hospitalizations", title = "NO2(µg/m3) - Respiratory issues in Eixample - week") +
+  scale_x_date(date_breaks = "2 days", date_labels = "%d-%b")
+```
+
+
+Now I will perform Pearson correlation test for PM10:
+```{r warning= FALSE, message= FALSE}
+cor_test2 <- cor.test(df_PM10_resp$PM10, df_PM10_resp$Hospitalizations_resp,
+                method = "pearson")
+cor_test2
+```
+Correlation coeficcient is 0.025, which is extremely low. My hypothesis is that the outliers are corrupting the result.
+
+I will calculate a robust covariance matrix between PM10 and respiration issues, and
+compare it with a classic covariance matrix:
+
+```{r warning= FALSE, message= FALSE}
+cov_PM10_resp_classic <- covClassic(cbind(df_PM10_resp$PM10,df_PM10_resp$Hospitalizations_resp), corr = TRUE)
+cov_PM10_resp_classic 
+cov_PM10_resp_rob <- covRob(cbind(df_PM10_resp$PM10,df_PM10_resp$Hospitalizations_resp), corr = TRUE)
+cov_PM10_resp_rob
+```
+
+I will plot both covariance matrixes:
+```{r warning= FALSE, message= FALSE}
+plot(cov_PM10_resp_classic)
+```
+
+```{r warning= FALSE, message= FALSE}
+plot(cov_PM10_resp_rob)
+```
+
+Therefore according to the data, the relationship between PM10 and hospitalizations for respiratory issues is weakly correlated. But this is not what other studies reflect, so there must be some other fact that I am missing.
+
+I am going to do the same analysis for hospitalizations related to heart diseases. 
+Please load file "Heart_2014-2017.csv".
+```{r warning= FALSE, message= FALSE}
+health_heart <- read_csv('/Users/ione/Desktop/Project_AIR/data/Heart_2014-2017.csv', locale = locale(encoding = "latin1"))
+```
+
+I will rename the column names
+```{r warning= FALSE, message= FALSE}
+health_heart <- health_heart %>% dplyr::rename(day="dia",
+                                             month= "mes",
+                                             year= "any",
+                                             Diagnosis = "Diagnòstic Principal",
+                                             Hospitalizations = "Contactes d'hospitalització d'aguts (altes AH)")
+```
+
+I translate all values of month from catalan to english:
+```{r warning= FALSE, message= FALSE}
+health_heart$month[health_heart$month == "Gener"] <- "January"
+health_heart$month[health_heart$month == "Febrer"] <- "February"
+health_heart$month[health_heart$month == "Març"] <- "March"
+health_heart$month[health_heart$month == "Abril"] <- "April"
+health_heart$month[health_heart$month == "Maig"] <- "May"
+health_heart$month[health_heart$month == "Juny"] <- "June"
+health_heart$month[health_heart$month == "Juliol"] <- "July"
+health_heart$month[health_heart$month == "Agost"] <- "August"
+health_heart$month[health_heart$month == "Setembre"] <- "September"
+health_heart$month[health_heart$month == "Octubre"] <- "October"
+health_heart$month[health_heart$month == "Novembre"] <- "November"
+health_heart$month[health_heart$month == "Desembre"] <- "December"
+```
+
+```{r warning= FALSE, message= FALSE}
+health_heart$dt <- paste(health_heart$year, health_heart$month, health_heart$day, sep="-") %>% ymd() %>% as.Date()
+```
+
+```{r warning= FALSE, message= FALSE}
+Eixample_NO2_heart <- merge(Eixample_NO2_day,health_heart,by="dt" )
+Eixample_PM10_heart <- merge(Eixample_PM10_day,health_heart,by="dt" )
+```
+
+I am now going to aggregate data,avg for NO2 and sum for hospitalizations:
+```{r warning= FALSE, message= FALSE}
+df_NO2_1 <- data.table(Eixample_NO2_heart)
+df_NO2_heart <- df_NO2_1[, list(NO2=mean(mean), Hospitalizations_heart=sum(Hospitalizations)),
+             by=dt]
+df_NO2_heart
+```
+
+```{r warning= FALSE, message= FALSE}
+df_PM10_1 <- data.table(Eixample_PM10_heart)
+df_PM10_heart <- df_PM10_1[, list(PM10=mean(mean), Hospitalizations_heart=sum(Hospitalizations)),
+                   by=dt]
+df_PM10_heart
+```
+
+Now I will perform the Pearson correlation test between NO2, PM10 and hospitalizations caused by heart issues:
+
+```{r warning= FALSE, message= FALSE}
+cor_NO2_heart <- cor.test(df_NO2_heart$NO2, df_NO2_heart$Hospitalizations_heart,
+                method = "pearson")
+cor_NO2_heart
+```
+
+The correlation coefficient between NO2 and heart issues is 0.50, which is significant. 
+
+```{r warning= FALSE, message= FALSE}
+cor_PM10_heart <- cor.test(df_PM10_heart$PM10, df_PM10_heart$Hospitalizations_heart,
+                          method = "pearson")
+cor_PM10_heart
+```
+
+The cor coef between PM10 and heart issues is just 0.125, which is quite weak.
+
+If I plot hospitalizations vs NO2 concentrations, there is some positive relationship:
+```{r warning= FALSE, message= FALSE}
+ggscatter(df_NO2_heart, x = "NO2", y = "Hospitalizations_heart",
+          add = "reg.line",
+          conf.int = TRUE,
+          add.params = list(color = "blue",
+                            fill = "lightgray") ) +
+  stat_cor(method = "pearson", label.x = 3, label.y = 65)  # Add correlation coefficient
+```
+
+For PM10 in the contrary the relationship is not clear when plotting, probably due to the outliers.
+```{r warning= FALSE, message= FALSE}
+ggscatter(df_PM10_heart, x = "PM10", y = "Hospitalizations_heart",
+          add = "reg.line",
+          conf.int = TRUE,
+          add.params = list(color = "blue",
+                            fill = "lightgray") ) +
+  stat_cor(method = "pearson", label.x = 3, label.y = 100)
+```
+
+I will try to do the correlation analysis for PM10 with a robust analytical covariance method
+so that the effect of the outliers is reduced.
+
+```{r warning= FALSE, message= FALSE}
+cov_PM10_heart_classic <- covClassic(cbind(df_PM10_heart$PM10,df_PM10_heart$Hospitalizations_heart), corr = TRUE)
+cov_PM10_heart_classic
+```
+
+```{r warning= FALSE, message= FALSE}
+cov_PM10_heart_rob <- covRob(cbind(df_PM10_heart$PM10,df_PM10_heart$Hospitalizations_heart), corr = TRUE)
+cov_PM10_heart_rob
+```
+
+With the robust method the covariance is up to 0.24.If I plot both the classic and the robust:
+
+```{r warning= FALSE, message= FALSE}
+plot(cov_PM10_heart_classic)
+```
+
+```{r warning= FALSE, message= FALSE}
+plot(cov_PM10_heart_rob)
+```
+
+
+Between NO2 and hospitalizations due to respiratory issues there is some positive relationship with correlation coefficient of 0.42, and between NO2 and hospitalizations due to heart problems is moderate with a correlation coefficient of 0.5.
+
+But PM10 and hospitalizations with respiratory problems are weakly linked with a correlation of 0.1, and PM10 and hospitalizations due to heart problems are linked with a correlation of 0.24.
+
+# Forecasting
+
+To predict pollution values is essential for local government, environmental or health agencies, to be able to anticipate and establish procedures to reduce the severity of local pollution levels.
+
+But it's also helpful for citizens because forecasting helps people plan ahead, and be able to decrease the effects on health and the costs associated.
+
+As we have seen, air pollution levels are strongly correlated with local weather conditions and nearby pollution emissions.However, long-range transport of pollution - through strong winds - is also a significant influencing factor and must be taken into consideration when forecasting local readings.
+
+Predicting air quality, therefore, not only involves the difficulties of weather forecasting, it also requires data on and knowledge of:
+
+- Local pollutant concentrations and emissions 
+- Pollutant concentrations and emissions from distant locations 
+- Movements and possible transformations of pollutants
+- Prevailing winds
+
+So forecasting pollution is much more complex than predicting the weather, but it's vital and I will try to analyze and implement. 
+
+For forecasting I am going to focus in Eixample, and pollutant NO2 only. I will generate 3 different training sets:
+- Data for 4 years from 2014 to 2018. 
+- Data for 1 year from 2018.
+- Data for 1 month of 2018, September. 
+
+Please load files "Eixample_NO2_2014_2018.csv", "Eixample_NO2_2018.csv", and "Eixample_NO2_2018_09.csv". You can find the R script [here](https://github.com/Ionetxu/Project_AIR/blob/master/Forecasting_models.R)
+
+```{r warning= FALSE, message= FALSE}
+library(readr)
+library(dplyr)
+library(tidyr)
+library(purrr)
+library(lubridate)
+library(ggplot2)
+library(stringr)
+library(knitr)
+library(xts)
+library(zoo)
+library(gridExtra)
+library(fpp2)
+library(RcppRoll)
+library(kableExtra)
+library(imputeTS)
+library(ggfortify)
+library(urca)
+library(forecast)
+
+Eixample_NO2_2014_2018 <- read_csv('/Users/ione/Desktop/Project_AIR/data/Eixample_NO2_2014_2018.csv')
+Eixample_NO2_2018 <- read_csv('/Users/ione/Desktop/Project_AIR/data/Eixample_NO2_2018.csv')
+Eixample_NO2_2018_09 <- read_csv('/Users/ione/Desktop/Project_AIR/data/Eixample_NO2_2018_09.csv')
+```
+
+
+I am going to transform the dataframes into ts time series objects:
+
+```{r warning= FALSE, message= FALSE}
+Eixample_NO2_ts <- ts(Eixample_NO2_2014_2018[,10], frequency = 24)
+Eixample_NO2_2018_ts <- ts(Eixample_NO2_2018[,10], frequency = 24)
+Eixample_NO2_2018_09_ts <- ts(Eixample_NO2_2018_09[,10], frequency = 24)
+```
+
+I am going to plot each time series now to see how they look:
+
+```{r warning= FALSE, message= FALSE}
+autoplot(Eixample_NO2_ts)
+```
+
+```{r warning= FALSE, message= FALSE}
+autoplot(Eixample_NO2_2018_ts)
+```
+
+```{r warning= FALSE, message= FALSE}
+autoplot(Eixample_NO2_2018_09_ts)
+```
+
+I am going to input NA values by using interpolation method:
+```{r warning= FALSE, message= FALSE}
+imp_2014_2018_NO2_Eixample_intp <- na.interpolation(Eixample_NO2_ts)
+imp_2018_NO2_Eixample_intp <- na.interpolation(Eixample_NO2_2018_ts)
+imp_2018_09_NO2_Eixample_intp <- na.interpolation(Eixample_NO2_2018_09_ts)
+```
+
+I'm going to plot one time series with the na interpolations:
+
+```{r warning= FALSE, message= FALSE}
+plotNA.imputations(x.withNA = Eixample_NO2_2018_09_ts, x.withImputations = imp_2018_09_NO2_Eixample_intp)
+```
+
+Decomposition of an additive times series for the month long period:
+```{r warning= FALSE, message= FALSE}
+Eixample_NO2_Comp <- decompose(imp_2018_09_NO2_Eixample_intp)
+plot(Eixample_NO2_Comp)
+```
+
+We observe the daily seasonality in the decomposition.
+
+Also I can see the trend, seasonality, and what is the autocorrelation level or the linear relationship between lagged values of our time series.
+
+I will plot the autocorrelation coefficients or a correlogram to show the autocorrelation function or ACF.
+
+```{r warning= FALSE, message= FALSE}
+ggAcf(imp_2014_2018_NO2_Eixample_intp)
+```
+
+We observe that we have at least a daily seasonality with peaks in lag=24 and multiples.
+We also have a trend, because the autocorrelations for small lags are large and positive, and observations nearby in time are similar size that decrease as the lags increase.
+The lags decrease because of the trend, and they have a “scalloped” shape due to the seasonality, in lag=24 and multiples.
+
+To evaluate the model, I am going to generate 3 training sets, and see what works best.
+
+Train1: 2014-01 to 2018-11, Test: 2018-12
+Train2: 2018-01 to 2018-11, Test: 2018-12
+Train3: 2018-09-1 to 2018-09-27, Test: 2018-09-28 to 2018-09-30
+
+```{r warning= FALSE, message= FALSE}
+train1 <- subset(imp_2014_2018_NO2_Eixample_intp, end=length(imp_2014_2018_NO2_Eixample_intp)-31*24)
+train2 <- subset(imp_2018_NO2_Eixample_intp, end = length(imp_2018_NO2_Eixample_intp) - 31*24)
+train3 <- subset(imp_2018_09_NO2_Eixample_intp, end = length(imp_2018_09_NO2_Eixample_intp) - 3*24)
+```
+
+I am going to create a very simple baseline with some simple forecasting methods like naive,
+seasonal naive, and average methods, and we are going to compare them.
+
+I will first create a very basic model using the average method.
+
+For train1 dataset, with 4 year data, we are going to try forecasting 24 h. 
+```{r warning= FALSE, message= FALSE}
+fcavg1 <- meanf(train1, h=24)
+```
+
+```{r warning= FALSE, message= FALSE}
+checkresiduals(fcavg1)
+```
+
+The residuals seem to be strongly correlated and the mean is not zero, so there is a lot of room for improvement.
+
+```{r warning= FALSE, message= FALSE}
+acavg1 <- accuracy(fcavg1,imp_2014_2018_NO2_Eixample_intp)
+acavg1
+```
+
+I will create the average model for the other two training sets:
+```{r warning= FALSE, message= FALSE}
+fcavg2 <- meanf(train2, h=24)
+acavg2 <- accuracy(fcavg2,imp_2018_NO2_Eixample_intp)
+acavg2
+```
+
+```{r warning= FALSE, message= FALSE}
+fcavg3 <- meanf(train3, h=24)
+acavg3 <- accuracy(fcavg3,imp_2018_09_NO2_Eixample_intp)
+acavg3
+```
+
+```{r warning= FALSE, message= FALSE}
+autoplot(fcavg3)
+```
+
+The best model so far is fcavg3 with RMSE 12.92, but it can be surely improved,so I will now try the Seasonal Naïve METHOD.
+
+```{r warning= FALSE, message= FALSE}
+fcsn1 <- snaive(train1, h = 24)
+acsnm1 <- accuracy(fcsn1,imp_2014_2018_NO2_Eixample_intp)
+acsnm1
+```
+
+```{r warning= FALSE, message= FALSE}
+fcsn2 <- snaive(train2, h = 24)
+acsnm2 <- accuracy(fcsn2,imp_2018_NO2_Eixample_intp)
+acsnm2
+```
+
+```{r warning= FALSE, message= FALSE}
+fcsn3 <- snaive(train3, h = 24)
+acsnm3 <- accuracy(fcsn3,imp_2018_09_NO2_Eixample_intp)
+acsnm3
+```
+
+```{r warning= FALSE, message= FALSE}
+autoplot(fcsn3)
+```
+
+It seems that the Seasonal Naive Method has not improved much the mean method, as so far the best model has been the mean model fcavg3 with 1 month training set (train3) with RMSE of 12.92.
+
+I am now going to try some exponential smoothing forecasting methods.
+Forecasts produced using exponential smoothing methods are weighted averages of past observations,
+with the weights decaying exponentially as the observations get older. The more recent the observation, the higher the associated weight.
+
+The Holt-Winters seasonal method comprises the forecast equation and three smoothing equations — one for the level ℓt, one for the trend bt, and one for the seasonal component st, with corresponding smoothing parameters α, β∗ and γ. We use m to denote the frequency of the seasonality, i.e., the number of seasons in a year.
+
+```{r warning= FALSE, message= FALSE}
+fhw1 <- hw(train1, seasonal = "additive", h = 24)
+```
+
+Check that the residuals look like white noise
+```{r warning= FALSE, message= FALSE}
+checkresiduals(fhw1)
+```
+
+Calculate the accuracy of the model
+```{r warning= FALSE, message= FALSE}
+achw1 <- accuracy(fhw1, imp_2014_2018_NO2_Eixample_intp)
+achw1
+```
+
+I will do the same for the training period 2 (for whole year 2018)
+```{r warning= FALSE, message= FALSE}
+fhw2 <- hw(train2, seasonal = "additive", h = 24)
+```
+
+```{r warning= FALSE, message= FALSE}
+achw2 <- accuracy(fhw2, imp_2018_NO2_Eixample_intp)
+achw2
+```
+
+I will do the same for the training period 3 (for september 2018)
+```{r warning= FALSE, message= FALSE}
+fhw3 <- hw(train3, seasonal = "additive", h = 24)
+```
+
+```{r warning= FALSE, message= FALSE}
+autoplot(fhw3)
+```
+
+```{r warning= FALSE, message= FALSE}
+checkresiduals(fhw3)
+```
+
+```{r warning= FALSE, message= FALSE}
+achw3 <- accuracy(fhw3, imp_2018_09_NO2_Eixample_intp)
+achw3
+```
+
+With Holt-Winters seasonal additive method,  we get the best RMSE = 9.93 so far, with train set 3 (September 2018). The residuals look like white noise, with small autocorrelation coefficients under 0.1 and with mean centered in 0. 
+
+Exponential smoothing methods can have multiple variations depending of the combinations of the trend and seasonality being additive or multiplicative. So Seasonal Holt-Winders is an additive trend and additive seasonal method, but for example I could have a (A,M) method, which would have a additive trend and multiplicative seasonality. 
+
+Also a model can have an additive or multiplicative error, adding a third parameter to the exponential smoothing methods, the error. They are called also ETS, for error, trend and seasonality. The possibilities for each component are: Error ={A,M}, Trend ={N,A,Ad} and Seasonal ={N,A,M}.
+
+I wil use the ETS method to forecast our time series:
+```{r warning= FALSE, message= FALSE}
+fitets1 <- ets(train1)
+e1 <- fitets1 %>% forecast(h = 24) %>% accuracy(imp_2014_2018_NO2_Eixample_intp)
+e1
+```
+
+With 4 years training, it returns an ETS(M,N,M) model with no white noise(p-value < 2.2e-16) and RMSE = 17.08266.
+
+```{r warning= FALSE, message= FALSE}
+fitets2 <- ets(train2)
+e2 <- fitets2 %>% forecast(h = 24) %>% accuracy(imp_2018_NO2_Eixample_intp)
+e2
+```
+
+With 11 months training, it returns an ETS(M,N,A) model with no white noise (p-value < 2.2e-16) and RMSE = 18.213865.
+
+```{r warning= FALSE, message= FALSE}
+fitets3 <- ets(train3)
+fitets3 %>% forecast(h = 24) %>% autoplot()
+```
+
+```{r warning= FALSE, message= FALSE}
+summary(fitets3)
+```
+
+```{r warning= FALSE, message= FALSE}
+e3 <- fitets3 %>% forecast(h = 24) %>% accuracy(imp_2018_09_NO2_Eixample_intp)
+e3
+```
+
+With one month training, it returns an ETS(M, Ad, M) model with no white noise (p-value = 7.387e-10) and RMSE = 9.452193
+
+Still, for some reason the forecast plot doesn't look too good, I wonder if the time series is stationary or white noise and don't have a predictable patter in the long term. 
+
+I will perform the Kwiatkowski-Phillips-Schmidt-Shin (KPSS) test (Kwiatkowski, Phillips, Schmidt, & Shin, 1992).
+In this test, the null hypothesis is that the data are stationary, and we look for evidence
+that the null hypothesis is false.
+Consequently, small p-values (e.g., less than 0.05) suggest that differencing is required.
+
+```{r warning= FALSE, message= FALSE}
+train1 %>% ur.kpss() %>% summary()
+```
+
+Value of test-statistic is: 1.9162 so we can discard that it's a stationary time series. 
+
+We can transform non-stationary to stationary by computing the differences between consecutive observations, and stabilising the variance of the time series. Differencing can help stabilise the mean of a time series by removing changes in the level of a time series, and therefore eliminating (or reducing) trend and seasonality.
+
+I will apply a seasonal ARIMA model next to our training sets. The seasonal ARIMA models have two sets of parameters (p,d,q)(P,D,Q), p related to the order of the autorregression or AR part, d if differencing is required and q to the order of the moving average part. P,D,Q are referring to the seasonal part of the model. 
+
+I will use the autorima function to see what kind of model is best:
+
+```{r warning= FALSE, message= FALSE}
+fitautoarima1 <- auto.arima(train1)
+checkresiduals(fitautoarima1)
+```
+
+
+```{r warning= FALSE, message= FALSE}
+a1 <- fitautoarima1 %>% forecast(h = 24) %>% accuracy(imp_2014_2018_NO2_Eixample_intp)
+a1
+```
+
+The proposed model parameters are ARIMA(5,1,0)(2,0,0)[24], so it proposes 1 differencing in the non-seasonal part of the mdel, and the order of the moving average is 0 in both parts. The autoregression order of the non-seasonal is 5, and the AR order of the seasonal 2. 
+
+The RMSE is 18.928269, which is higher than ETS models tried before. 
+
+```{r warning= FALSE, message= FALSE}
+fitautoarima2 <- auto.arima(train2)
+a2 <- fitautoarima2 %>% forecast(h = 24) %>% accuracy(imp_2018_NO2_Eixample_intp)
+a2
+```
+
+With training set 2, the model proposed is an ARIMA(1,0,1)(2,0,0)[24]. No differencing was required, and the AR is 1 in the non-seasonal part, 2 in the seasonal part. It has included one order of the MA part. 
+The RMSE=27.99 is very high, so it doesn't look like a good model. 
+
+I will finish with the training set 3, which is for the month of september 2018.
+```{r warning= FALSE, message= FALSE}
+fitautoarima3 <- auto.arima(train3)
+summary(fitautoarima3)
+```
+
+```{r warning= FALSE, message= FALSE}
+fitautoarima3 %>% forecast(h=24) %>% autoplot()
+```
+
+```{r warning= FALSE, message= FALSE}
+a3 <- fitautoarima3 %>% forecast(h = 24) %>% accuracy(imp_2018_09_NO2_Eixample_intp)
+a3
+```
+
+
+For a training period of one month, the ARIMA(1,0,0)(0,0,1)[24] is chosen. Just one order of the AR non seasonal part, and one order of the MA seasonal part. The error RMSE= 12.34 seems to improve the other ARIMA models but it's still worse than the ETS model. 
+
+This is not the result I was expecting and my hypothesis is that the times series have a multiple seasonality. With pollution data, we have a case of multiple seasonality with daily, weekly and yearly seasons. To deal with these maybe I should adapt my models to different training sets to avoid multiple seasonalities. If the time series is relatively short so that only one type of seasonality is present, then maybe it will be possible to use one of the single-seasonal methods like ETS or a seasonal ARIMA model.
+
+But when the time series is long enough so that multiple seasonal periods appear, it will be necessary to use STL, dynamic harmonic regression or TBATS.
+
+I am going to try the TBATS model, which is an automated method that uses a combination of Fourier terms with an exponential smoothing state space model and a Box-Cox transformation, in a completely automated manner. 
+
+```{r warning= FALSE, message= FALSE}
+train1 %>% tbats() -> fit_tbats
+summary(fit_tbats)
+```
+
+It's interesting because the TBATS model returns a model TBATS(0.3, {3,1}, 0.904, {<24,11>}), which it only includes 1 seasonality of 24 hours, and I know there are at least a weekly and a yearly seasonality.Box-Cox parameter is 0.3, and the damping parameter 0.904. It's a order 3 for AR and 1 for MA part. 
+
+```{r warning= FALSE, message= FALSE}
+train3 %>% tbats() -> fit_tbats3
+fc3 <- forecast(fit_tbats3, h=24)
+autoplot(fc3)
+```
+
+```{r warning= FALSE, message= FALSE}
+acctbats3 <- accuracy(fc3,imp_2018_09_NO2_Eixample_intp)
+acctbats3
+```
+
+The TBATS model resulted with training period of one month is a TBATS(0.113, {0,0}, 0.8, {24,7}), with just one seasonality of 24 hours, no AR or MA component, and significant 0.113 Cox-Box transformation component, with 0.8 damping parameter. The RMSE is 10.31, which is worse than the one I got with ETS(M, Ad, M) model, with RMSE = 9.452193. 
+
+# Conclusions
+
+I will use this last section to wrap up all the insights learned from this project.
+
+## Data Quality
+
+- PM 2.5 not automatically measured hourly
+
+The first finding I encountered was that PM2.5 is not measured automatically in an hourly manner. PM2.5 is probably the most dangerous air pollutant due to its small size that they can penetrate deep in the lungs and even in the blood stream, causing not only respiratory issues but also heart related problems.
+
+For this reason, I strongly encourage the local administration to start measuring PM2.5 in order to keep it under control and be able to act with information.
+
+- Completeness of pollution measurement
+
+Another important finding was that the pollution is automatically measured only between 10am and midnight 12am. This means morning rush hour pollution is not being measured, hence we don't have completeness of data. Having complete information would help not only to understand data patterns better, but also to be able to build better prediction models and be able to anticipate pollution episodes more accurately.
+
+## Which days of the week have the cleanest air?
+
+In terms of understanding pollution patterns, weekends have better PM10 and NO2 average concentrations than weekdays, being Fridays the day with the highest pollution for both NO2 and PM10, and Sunday the day with the cleanest air.
+
+## Which months have the cleanest air?
+Regarding the months, **August** is the cleanest month for NO2 as an average of the last five years, while **December** is the worst. It's interesting to see this as it seems like the higher temperatures in the summer doesn't seem to affect NO2 concentrations. Also, the big amount of tourists don't seem to be the cause of NO2, but probably it's locals using cars to get into the city.
+
+For PM10 the best month with lowest average concentration and the cleanest in the last five years is **January**, and the most polluted month is **June**. This is so different from NO2 patterns that I suspect different sources are affecting each pollutant.
+
+## What time of the day is the most polluted? And the cleanest?
+4pm is the time of the day where both PM10 and NO2 are the lowest concentration. For NO2, 10am and 9pm are the most polluted times, while for PM10 10am is the most polluted time of the day. 
+This is according to the data we have, as there might be another pollution peak before 10am that is not being measured currently. 
+
+## Compliance with EU Air Quality Legislation?
+NO2 yearly average levels have breach the limits set by EU air quality legislation in the last years. Barcelona, among other cities, has been warned to implement air quality plans and set out appropriate measures to bring this situation to an end as soon as possible. See some news about this [here](http://europa.eu/rapid/press-release_IP-17-238_en.htm).
+
+In contrast, yearly average levels of PM10 are complient with the EU legislation. But the hourly limit has been breach with extremely high concentrations of PM10, specially in June. The highest concentrations (with max value of 1409 µg/m3 in 2017, with daily average limit being 50 µg/m3) happen to be around 23rd and 24th June, on **Sant Joan**, where the city celebrates summer solstice with bonfires, fireworks and firecrackers. Firecrackers are extremely pollutant, and they should be regulated like in China or India, where fireworks have been banned for Lunar New Year or Diwali festivities.
+
+## Weather impacts to pollution
+
+Weather is one of the components that has more effect on air pollution. In Barcelona, **NO2** pollutant is most affected by **wind speed** and **wind direction**. The optimal wind direction for lower NO2 concentration would be **North West**, while when the wind is South East the NO2 pollution is higher.
+
+Regarding **PM10**, it's most affected by temperature and wind direction, being **North West** winds best to clean the air in the city.
+
+## Pollution's relationship with medical issues
+
+Hospitalizations for respiratory and heart issues are moderately correlated to NO2 pollution levels, while PM10 is somewhat correlated but I was not able to find strong relations neither with respiratory or heart related hospitalizations.  
+
+## Forecasting pollution
+Forecasting pollution is extremely complex due to the high variability of the process, but it's important to be able to anticipate high pollution episodes in order to take actions and protect the citizens. 
+
+## Next steps
+
+This is an ongoing project, and I plan to continue working on this analysis as a personal project. I want to work on the following topics:
+
+- Improving the forecasting model by creating a multivariate time series, with multiple variables that can affect pollution. 
+
+- Including ground level Ozone O3 into the analysis.
+- Analyzing how strikes affect to pollution. 
+- How does the traffic of port of Barcelona affect to pollution?
+- How does air traffic affect to pollution?
+- Implement a dashboard for citizens of Barcelona with real-time data. 
+
+# References
+
+Rob J Hyndman and George Athanasopoulos,2012, ["Forecasting: Principles and Practice"" ](https://otexts.com/fpp2/).
+
+
+
