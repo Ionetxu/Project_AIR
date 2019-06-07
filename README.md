@@ -1,4 +1,4 @@
-
+# Pollution in Barcelona
   >“It is a capital mistake to theorize before one has data.” Sherlock Holmes, “A Study in Scarlett” (Arthur Conan Doyle)
 
 My name is Jone Lerchundi and I have worked as a BI consultant for more than 8 years helping companies to understand and leverage useful insights from data. Following my passion for data, I have recently studied a [Masters in Data Science](https://kschool.com/cursos/master-en-data-science-barcelona/) (13th promotion) at Kschool with the idea of expanding my skills and learning new tools and ideas that data science offers to better understand, capture and explain stories from data.
